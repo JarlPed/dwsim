@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest an idea for DWSIM
+about: Suggest a development idea
 title: "[Enhancement] "
 labels: feature-request 
 assignees: ''
