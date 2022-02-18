@@ -232,7 +232,8 @@ Namespace Reactors
 
             For i = 0 To Me.Reactions.Count - 1
                 reaction = FlowSheet.Reactions(Me.Reactions(i))
-                kr = reaction.EvaluateK(T + reaction.Approach, pp)
+                ' TODO: Fix component molarities
+                kr = reaction.EvaluateK(T + reaction.Approach, pp, Nothing)
                 ktot *= kr
                 prodtot *= Math.Abs(prod(i))
                 f(i) = Math.Log(Math.Abs(prod(i)) / kr)

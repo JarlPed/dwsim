@@ -124,10 +124,10 @@
     <value>Tmáx (k)</value>
   </data>
   <data name="rbKeqfT.Text" xml:space="preserve">
-    <value>Función de la temperatura: ln Keq [f (t)] =</value>
+    <value>Función: Keq [f(T, {[Component Tag], ..})] =</value>
   </data>
   <data name="KryptonLabel5.Text" xml:space="preserve">
-    <value>T en K</value>
+    <value>T en K; [Etiqueta de componente] se denota en Molar</value>
   </data>
   <data name="KryptonLabel2.Text" xml:space="preserve">
     <value>Calor de reacción (kJ/kmol_CB) (25 °C)</value>

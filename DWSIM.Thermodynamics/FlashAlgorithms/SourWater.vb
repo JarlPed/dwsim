@@ -391,7 +391,8 @@ Namespace PropertyPackages.Auxiliary.FlashAlgorithms
             Dim kr As New List(Of Double)
 
             For Each r In Reactions
-                kr.Add(r.EvaluateK(T, pp))
+                ' TODO fix component molarities
+                kr.Add(r.EvaluateK(T, pp, Nothing))
             Next
 
             'loop: assume a concentration of H2NCOO- 

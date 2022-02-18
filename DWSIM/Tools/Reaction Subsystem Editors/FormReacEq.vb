@@ -20,6 +20,8 @@ Imports Ciloci.Flee
 Imports DWSIM.Thermodynamics.BaseClasses
 Imports DWSIM.Interfaces.Enums
 
+Imports System.Text.RegularExpressions
+
 Public Class FormReacEq
 
     Inherits System.Windows.Forms.Form
@@ -48,7 +50,7 @@ Public Class FormReacEq
         'populate datagrid
         For Each subs As ConstantProperties In fc.Options.SelectedComponents.Values
             With Me.KryptonDataGridView1
-                .Rows.Add(New Object() {(subs.Name), Format(subs.Molar_Weight, nf), Format(subs.IG_Enthalpy_of_Formation_25C, nf), False, False, 0, subs.Name, 0})
+                .Rows.Add(New Object() {(subs.Name), Format(subs.Molar_Weight, nf), Format(subs.IG_Enthalpy_of_Formation_25C, nf), False, False, 0, subs.Name, 0, subs.Tag})
             End With
         Next
 
@@ -244,6 +246,8 @@ Public Class FormReacEq
 
     Private Sub KryptonButton4_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles KryptonButton4.Click
 
+        Dim matches As MatchCollection
+
         If Me.tbStoich.Text <> "OK" Then
             MessageBox.Show(DWSIM.App.GetLocalString("VerifiqueEstequiometria"), DWSIM.App.GetLocalString("ErroAoAdicionarReacao"), MessageBoxButtons.OK, MessageBoxIcon.Error)
         Else
@@ -255,16 +259,24 @@ Public Class FormReacEq
                 End With
                 With rc
                     .ExpContext.Variables.Add("T", Convert.ToDouble(300))
+
+
+                    matches = Regex.Matches(Me.tbExp.Text, "\[.*?\]")
+                    For i_ As Integer = 0 To matches.Count - 1
+                        .ExpContext.Variables.Add(matches(i_).Value.Replace("[", "").Replace("]", ""), Convert.ToDouble(1))
+                    Next
+
+
                     Try
                         .ExpContext.Options.ParseCulture = Globalization.CultureInfo.InvariantCulture
-                        .Expr = .ExpContext.CompileGeneric(Of Double)(Me.tbExp.Text)
-                        .Expression = Me.tbExp.Text
+                        .Expr = .ExpContext.CompileGeneric(Of Double)(Me.tbExp.Text.Replace("[", "").Replace("]", ""))
+                        .Expression = Me.tbExp.Text.Replace("[", "").Replace("]", "")
                     Catch ex As ExpressionCompileException
                         Select Case ex.Reason
                             Case CompileExceptionReason.SyntaxError
-                                MessageBox.Show(DWSIM.App.GetLocalString("Erronasintaxedaexpre"))
+                                MessageBox.Show(ex.Message, DWSIM.App.GetLocalString("Erronasintaxedaexpre"))
                             Case CompileExceptionReason.UndefinedName
-                                MessageBox.Show(DWSIM.App.GetLocalString("ErronaexpressoVerifi"))
+                                MessageBox.Show(ex.Message, DWSIM.App.GetLocalString("ErronaexpressoVerifi"))
                             Case Else
                                 MessageBox.Show(ex.ToString)
                         End Select

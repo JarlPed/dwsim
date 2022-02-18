@@ -39,7 +39,7 @@
 
 
     ''' <summary>
-    ''' Minimizes a function value using IPOPT solver.
+    ''' Minimizes a function value using BFGSB solver.
     ''' </summary>
     ''' <param name="functionbody">f(x) where x is a vector of doubles, returns the value of the function.</param>
     ''' <param name="functiongradient">Optional. g(x) where x is a vector of doubles, returns the value of the gradient of the function with respect to each variable.</param>
@@ -58,6 +58,7 @@
 
         If functiongradient Is Nothing Then
             fxg = Function(xv)
+                      ' TODO: better gradient evaluator..
                       Return FunctionGradientInternal(xv)
                   End Function
         Else
@@ -98,7 +99,7 @@
 
     Private Function FunctionGradientInternal(ByVal x() As Double) As Double()
 
-        Dim epsilon As Double = 0.001
+        Dim epsilon As Double = Tolerance / 100 '0.000000001
 
         Dim f1, f2 As Double
         Dim g(x.Length - 1), x1(x.Length - 1), x2(x.Length - 1) As Double
@@ -120,6 +121,7 @@
             f2 = fxb.Invoke(x2)
             g(j) = (f2 - f1) / (x2(j) - x1(j))
         Next
+
 
         Return g
 

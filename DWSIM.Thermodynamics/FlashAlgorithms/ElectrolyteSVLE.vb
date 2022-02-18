@@ -254,7 +254,9 @@ Namespace PropertyPackages.Auxiliary.FlashAlgorithms
 
             P0 = 101325
 
+
             Dim rxn As Interfaces.IReaction
+
 
             'check active reactions (equilibrium only) in the reaction set
             For Each rxnsb As Interfaces.IReactionSetBase In proppack.CurrentMaterialStream.Flowsheet.ReactionSets(Me.ReactionSet).Reactions.Values
@@ -263,9 +265,9 @@ Namespace PropertyPackages.Auxiliary.FlashAlgorithms
                     If Not ReactionExtents.ContainsKey(rxnsb.ReactionID) Then
                         Me.ReactionExtents.Add(rxnsb.ReactionID, 0)
                     End If
-                    rxn = proppack.CurrentMaterialStream.Flowsheet.Reactions(rxnsb.ReactionID)
-                    'equilibrium constant calculation
-                    rxn.EvaluateK(T + rxn.Approach, proppack)
+                    '        rxn = proppack.CurrentMaterialStream.Flowsheet.Reactions(rxnsb.ReactionID)
+                    '        'equilibrium constant calculation
+                    '        rxn.EvaluateK(T + rxn.Approach, proppack, compAmountDict)
                 End If
             Next
 
@@ -335,187 +337,152 @@ Namespace PropertyPackages.Auxiliary.FlashAlgorithms
                 Me.T = T
                 Me.P = P
 
+
+                'Dim compAmountDict As Dictionary(Of String, Double)
+                'For i = 0 To CompoundProperties.Count() - 1
+                '    If Me.CompoundProperties(i).Tag <> "" Then
+                '        compAmountDict.Add(CompoundProperties(i).Tag, N0(i))
+                '    End If
+                'Next
+
                 'check if there is enough reactant to proceeed with chemical equilibrium calculation
+
+                Dim ReactEqConc(c) As Double
+
 
                 If N.Values.Sum > 0.0# Then
 
+                    Dim solver1 As New MathEx.Optimization.IPOPTSolver 'MathOps.BFGSBMinimizer ' MathNet.Numerics.Optimization.BfgsMinimizer(Tolerance, Tolerance, Tolerance, MaximumIterations / 2) '
 
-                    Dim lbound(Me.ReactionExtents.Count - 1) As Double
-                    Dim ubound(Me.ReactionExtents.Count - 1) As Double
+                    solver1.MaxIterations = MaximumIterations / 2
+                    solver1.Tolerance = Tolerance
 
-                    Dim bounds As New List(Of Double)
-
-                    i = 0
-                    For Each rxid As String In Me.Reactions
-                        rx = proppack.CurrentMaterialStream.Flowsheet.Reactions(rxid)
-                        For Each comp As BaseClasses.ReactionStoichBase In rx.Components.Values
-                            bounds.Add(Math.Abs(N0(comp.CompName) / comp.StoichCoeff))
-                        Next
-                        i += 1
+                    '' Bounds of logConc :
+                    Dim LBound(c) As Double
+                    Dim UBound(c) As Double
+                    For i = 0 To c
+                        LBound(i) = -100
+                        UBound(i) = Math.Log10(300)
                     Next
 
-                    i = 0
-                    For Each rxid As String In Me.Reactions
-                        lbound(i) = -bounds.Max
-                        ubound(i) = bounds.Max
-                        i += 1
-                    Next
 
-                    Dim m As Integer = 0
-
-                    Dim REx(r), REx0(r) As Double
-
-                    If ReactionExtents.Count > 0 Then
-                        REx = ReactionExtents.Values.ToArray()
-                        REx0 = ReactionExtents.Values.ToArray()
+                    '' Inital logReactConc
+                    Dim wden As Double = 0.0#
+                    If TypeOf proppack Is ExUNIQUACPropertyPackage Then
+                        wden = CType(proppack, ExUNIQUACPropertyPackage).m_elec.LiquidDensity(Vnl, T, CompoundProperties)
+                    ElseIf TypeOf proppack Is ElectrolyteNRTLPropertyPackage Then
+                        wden = CType(proppack, ElectrolyteNRTLPropertyPackage).m_elec.LiquidDensity(Vnl, T, CompoundProperties)
+                    ElseIf TypeOf proppack Is LIQUAC2PropertyPackage Then
+                        wden = CType(proppack, LIQUAC2PropertyPackage).m_elec.LiquidDensity(Vnl, T, CompoundProperties)
+                    ElseIf TypeOf proppack Is DebyeHuckelPropertyPackage Then
+                        wden = CType(proppack, DebyeHuckelPropertyPackage).m_elec.LiquidDensity(Vnl, T, CompoundProperties)
                     End If
 
-                    Dim W0 = Vnl.Sum * proppack.AUX_MMM(Vnl) / 1000
-
-                    MinVal = Math.Min(lbound.Min, REx.Min)
-                    MaxVal = Math.Max(ubound.Max, REx.Max)
-
-                    'solve using newton's method
-
-                    Dim x(r), newx(r) As Double
-
-                    Dim errval, sumerr As Double
-
-                    x = REx
-
-                    Dim xs As Double
-
-                    Dim variables As New List(Of Double)
-                    For i = 0 To r
-                        xs = Scaler.Scale(x(i), MinVal, MaxVal, 0.0, 1.0)
-                        variables.Add(Math.Log(xs))
+                    Dim wtotal As Double = N.Values.Sum * proppack.AUX_MMM(Vnl) / 1000
+                    Dim molality(Vnl.Count() - 1) As Double
+                    For i = 0 To Vnl.Count() - 1
+                        molality(i) = Vnl(i) / wtotal * wden / 1000
                     Next
 
-                    newx = variables.toarray()
+                    Dim initLog10Conc(c) As Double
+                    For i = 0 To CompoundProperties.Count() - 1
+                        For j = 0 To N.Count() - 1
+                            If Me.ComponentIDs(j) = CompoundProperties(i).Name Then
+                                If (molality(i) > 0) Then
+                                    initLog10Conc(j) = Math.Log10(molality(i))
+                                Else
+                                    initLog10Conc(j) = -2
+                                End If
+                            End If
+                        Next
 
-                    Dim solver3 As New Optimization.NewtonSolver
-                    solver3.MaxIterations = MaximumIterations
-                    solver3.Tolerance = Tolerance
-                    solver3.EnableDamping = True
-                    solver3.MaximumDelta = 0.1
-                    solver3.ExpandFactor = 1.1
-
-                    Dim feq = Sub(newx2)
-
-                                  solver3.Reset()
-
-                                  errval = 0.0
-                                  sumerr = 0.0
-
-                                  Dim fval As Double()
-
-                                  If ExternalSolver Is Nothing Then
-
-                                      newx = solver3.Solve(Function(x1)
-                                                               fval = FunctionValue2N(x1, True)
-                                                               Return fval
-                                                           End Function, newx2)
-
-                                      errval = FunctionValue2N(newx, True).AbsSqrSumY()
-
-                                      newx = solver3.Solve(Function(x1)
-                                                               fval = FunctionValue2N(x1, False)
-                                                               Return fval
-                                                           End Function, newx)
-
-                                  Else
-
-                                      Try
-
-                                          newx = ExternalSolver.Solve(Function(x1)
-                                                                          fval = FunctionValue2N(x1, True)
-                                                                          Return fval
-                                                                      End Function, Nothing, Nothing,
-                                                                                newx2, MaximumIterations, Tolerance)
-
-                                          errval = FunctionValue2N(newx, True).AbsSqrSumY()
-
-                                          newx = ExternalSolver.Solve(Function(x1)
-                                                                          fval = FunctionValue2N(x1, False)
-                                                                          Return fval
-                                                                      End Function, Nothing, Nothing,
-                                                                                newx, MaximumIterations, Tolerance)
-
-                                      Catch ex As Exception
-
-                                          newx = solver3.Solve(Function(x1)
-                                                                   fval = FunctionValue2N(x1, True)
-                                                                   Return fval
-                                                               End Function, newx2)
-
-                                          errval = FunctionValue2N(newx, True).AbsSqrSumY()
-
-                                          newx = solver3.Solve(Function(x1)
-                                                                   fval = FunctionValue2N(x1, False)
-                                                                   Return fval
-                                                               End Function, newx)
-
-                                      End Try
-
-                                  End If
+                    Next
 
 
-                                  errval = FunctionValue2N(newx, False).AbsSqrSumY()
+                    ''' Function body to be solved.. First ideal then non-ideal equations (i.e. activity coef)
+                    Dim feq = Sub(log10newConc)
+                                  Dim fbody = Function(x_p As Double())
+                                                  Return FunctionValue3N(x_p, True)
+                                              End Function
 
-                                  If Math.Abs(errval) > Tolerance Or Math.Abs(Pval) > 0.01 Then
-                                      Throw New Exception("Error calculating equilibrium composition.")
-                                  End If
+                                  Dim fbodyNonIdeal = Function(x_p As Double())
+                                                          Return FunctionValue3N(x_p, False)
+                                                      End Function
 
-                                  newx = newx.Select(Function(xi) Scaler.UnScale(Math.Exp(xi), MinVal, MaxVal, 0.0, 1.0)).ToArray
+                                  'Dim linfbody = Function(x_p As MathNet.Numerics.LinearAlgebra.Vector(Of Double))
+                                  '                   Return FunctionValue3N(x_p.ToArray(), True)
+                                  '               End Function
+                                  '
+                                  'Dim linfbodyNonIdeal = Function(x_p As MathNet.Numerics.LinearAlgebra.Vector(Of Double))
+                                  '                           Return FunctionValue3N(x_p.ToArray(), False)
+                                  '                       End Function
 
-                                  sumerr = x.SubtractY(newx).AbsSqrSumY
 
-                                  x = newx
+
+                                  log10newConc = solver1.Solve(fbody, functiongradient:=Nothing, vars:=initLog10Conc, lbounds:=LBound, ubounds:=UBound)
+                                  'Dim solution = solver1.FindMinimum(linfbody, MathNet.Numerics.LinearAlgebra.CreateVector.Dense(initLog10Conc))
+
+
+                                  Dim errval = fbody(log10newConc)
+
+                                  'log10newConc = solver1.Solve(fbodyNonIdeal, functiongradient:=Nothing, vars:=log10newConc, lbounds:=LBound, ubounds:=UBound)
+                                  'solution = solver1.FindMinimum(linfbodyNonIdeal, solution.MinimizingPoint)
+
+
+                                  errval = fbodyNonIdeal(log10newConc)
+
+                                  Dim k As Integer
+                                  For k = 0 To log10newConc.Count() - 1
+                                      ReactEqConc(k) = Math.Pow(10, log10newConc(i))
+                                  Next
+
 
                               End Sub
+
+
 
                     Dim HasError As Boolean = True
                     Try
                         PenaltyValueScheme = 0
-                        feq.Invoke(variables.ToArray())
+                        feq.Invoke(initLog10Conc)
                         HasError = False
                     Catch ex As Exception
                         HasError = True
                     End Try
-                    If HasError Then
-                        Try
-                            PenaltyValueScheme = 1
-                            feq.Invoke(variables.ToArray())
-                            HasError = False
-                        Catch ex As Exception
-                            HasError = True
-                        End Try
-                        If HasError Then
-                            Try
-                                PenaltyValueScheme = 2
-                                feq.Invoke(variables.ToArray())
-                                HasError = False
-                            Catch ex As Exception
-                                HasError = True
-                            End Try
-                            If HasError Then
-                                PenaltyValueScheme = 3
-                                feq.Invoke(variables.ToArray())
-                            End If
-                        End If
-                    End If
+                    ''If HasError Then
+                    ''    Try
+                    ''        PenaltyValueScheme = 1
+                    ''        feq.Invoke(initLog10Conc)
+                    ''        HasError = False
+                    ''    Catch ex As Exception
+                    ''        HasError = True
+                    ''    End Try
+                    ''    If HasError Then
+                    ''        Try
+                    ''            PenaltyValueScheme = 2
+                    ''            feq.Invoke(initLog10Conc)
+                    ''            HasError = False
+                    ''        Catch ex As Exception
+                    ''            HasError = True
+                    ''        End Try
+                    ''        If HasError Then
+                    ''            PenaltyValueScheme = 3
+                    ''            feq.Invoke(initLog10Conc)
+                    ''        End If
+                    ''    End If
+                    ''End If
 
-                    REx = x
-
+                    'REx = DN.Values()
+                    '
                     i = 0
-                    For Each r As String In Me.Reactions
-                        ReactionExtents(r) = REx(i)
-                        i += 1
-                    Next
+                    'For Each r As String In Me.Reactions
+                    '    ReactionExtents(r) = DN(i)
+                    '    i += 1
+                    'Next
 
                 End If
 
-                'compound conversions
+                '' compound conversions
 
                 For Each sb As String In ids
                     If Me.ComponentConversions.ContainsKey(sb) Then
@@ -523,7 +490,7 @@ Namespace PropertyPackages.Auxiliary.FlashAlgorithms
                     End If
                 Next
 
-                ' return equilibrium molar amounts in the liquid phase.
+                '' return equilibrium molar amounts In the liquid phase.
 
                 Dim Vnl2 As Double() = Vnl.Clone
 
@@ -543,7 +510,7 @@ Namespace PropertyPackages.Auxiliary.FlashAlgorithms
 
                 Return Vnl2
 
-            Else
+            Else ' No Reactions is found ...
 
                 Return Vnl
 
@@ -551,7 +518,7 @@ Namespace PropertyPackages.Auxiliary.FlashAlgorithms
 
         End Function
 
-        Private Function FunctionValue2N(x() As Double, ideal As Boolean) As Double()
+        Private Function FunctionValue2N(x() As Double, ByVal ideal As Boolean) As Double()
 
             If Double.IsNaN(x.Sum) Then Throw New Exception("Convergence Error")
 
@@ -562,7 +529,7 @@ Namespace PropertyPackages.Auxiliary.FlashAlgorithms
             Dim unscaled_extents(r) As Double
 
             For i = 0 To r
-                Dim val0 = Math.Pow(Math.E, x(i))
+                Dim val0 = Math.Pow(10, x(i)) 'Math.Pow(Math.E, x(i))
                 unscaled_extents(i) = Scaler.UnScale(val0, MinVal, MaxVal, 0.0, 1.0)
             Next
 
@@ -612,6 +579,12 @@ Namespace PropertyPackages.Auxiliary.FlashAlgorithms
                     Vxns(i) = Vxl(i)
                 End If
             Next
+            Dim Vxns_SUM As Double = Vxns.Sum()
+            For i = 0 To nc
+                Vxns(i) = Vxns(i) / (1 - Vxns_SUM / Vxl.Sum())  ' / ((Vxl.Sum() - Vxns_SUM) / Vxl.Sum()) ' calc relative fractions 
+            Next
+
+
 
             'Vxns = Vxns.NormalizeY
 
@@ -692,28 +665,41 @@ Namespace PropertyPackages.Auxiliary.FlashAlgorithms
 
             Dim f(x.Length - 1) As Double
 
+
+
+            Dim compAmountDict As Dictionary(Of String, Double)
+
+
+            For i = 0 To CompoundProperties.Count() - 1
+                If CompoundProperties(i).Tag <> "" Then
+                    compAmountDict.Add(CompoundProperties(i).Tag, molality(i))
+                End If
+            Next
+
+
+
             For i = 0 To Me.Reactions.Count - 1
                 reaction = proppack.CurrentMaterialStream.Flowsheet.Reactions(Me.Reactions(i))
-                kr = reaction.EvaluateK(T + reaction.Approach, proppack)
+                kr = reaction.EvaluateK(T + reaction.Approach, proppack, Nothing)
                 ktot *= kr
                 prodtot *= Math.Abs(prod(i))
                 f(i) = Math.Log(prod(i) / kr)
-                If Math.Abs(pval) > 0.01 Then
+                If Math.Abs(Pval) > 0.01 Then
                     If PenaltyValueScheme = 0 Then
 
                     ElseIf PenaltyValueScheme = 1 Then
                         f(i) *= Pval * 10000
                     ElseIf PenaltyValueScheme = 2 Then
-                        If Math.Abs(pval * f(i)) > 1.0 Then
-                            f(i) = pval * f(i)
+                        If Math.Abs(Pval * f(i)) > 1.0 Then
+                            f(i) = Pval * f(i)
                         Else
                             f(i) = Pval / f(i)
                         End If
                     ElseIf PenaltyValueScheme = 3 Then
                         If Math.Abs(f(i)) >= 0.0 And Math.Abs(f(i)) < 1.0 Then
-                            f(i) = pval / f(i)
+                            f(i) = Pval / f(i)
                         Else
-                            f(i) = pval * f(i)
+                            f(i) = Pval * f(i)
                         End If
                     End If
                     If Math.Abs(f(i)) < 1.0 Then f(i) = 1.0 / f(i)
@@ -858,6 +844,347 @@ Namespace PropertyPackages.Auxiliary.FlashAlgorithms
         '    Return fvals
 
         'End Function
+
+        Private Function FunctionValue3N(ByVal log10Conc() As Double, ideal As Boolean) As Double
+            If Double.IsNaN(log10Conc.Sum) Then Throw New Exception("Convergence Error")
+
+            Dim nc = Me.CompoundProperties.Count - 1
+            'Me.ComponentIDs
+
+            Dim Vxl(nc) As Double
+
+            'calculate molality considering 1 mol of mixture.
+
+            Dim mtotal As Double = 0.0#
+            Dim molality(nc) As Double
+
+            Dim i = 0
+
+            For i = 0 To nc
+                Vxl(i) = Vxl0(i)
+            Next
+
+            Dim ReactionConc(N.Count() - 1) As Double
+            For i = 0 To N.Count() - 1
+                ReactionConc(i) = Math.Pow(10, log10Conc(i))
+            Next
+
+            Dim ReactionMolFrac(N.Count() - 1) As Double
+            For i = 0 To N.Count() - 1
+                ReactionMolFrac(i) = ReactionConc(i) / ReactionConc.Sum()
+            Next
+
+
+
+            i = 0
+            Dim j = 0
+            For i = 0 To N.Count - 1
+                For j = 0 To nc
+                    If CompoundProperties(j).Name = Me.ComponentIDs(i) Then
+                        Vxl(j) = ReactionMolFrac(i) / (1 - Ninerts)
+
+                    End If
+                Next
+            Next
+
+
+
+
+            Dim wtotal As Double = N.Values.Sum * proppack.AUX_MMM(Vxl) / 1000
+
+            Dim Xsolv As Double = 1
+
+
+            Dim ReactBalances = ReactionBalanceError(ReactionMolFrac)
+            Dim ElementBalance = ElementBalanceError(ReactionMolFrac)
+            Dim MassBalance = MassBalanceError(ReactionMolFrac)
+
+            Dim ElementNames = ElementBalance.Keys().ToArray()
+
+            For Each ElemName In ElementNames
+                If ElementBalance(ElemName) = 0 Then
+                    ElementBalance.Remove(ElemName)
+                End If
+            Next
+
+
+            'solvent density without solids and ions
+
+            Dim Vxns(nc) As Double
+
+            For i = 0 To nc
+                If Not CompoundProperties(i).IsSalt And Not CompoundProperties(i).IsIon Then
+                    Vxns(i) = Vxl(i)
+                End If
+            Next
+            Dim Vxns_SUM As Double = Vxns.Sum()
+            'For i = 0 To nc
+            '    Vxns(i) = Vxns(i) / (1 - Vxns_SUM / Vxl.Sum())  ' / ((Vxl.Sum() - Vxns_SUM) / Vxl.Sum()) ' calc relative fractions 
+            'Next
+
+
+
+            'Vxns = Vxns.NormalizeY
+
+            Dim wden As Double = 0.0#
+            If TypeOf proppack Is ExUNIQUACPropertyPackage Then
+                wden = CType(proppack, ExUNIQUACPropertyPackage).m_elec.LiquidDensity(Vxns, T, CompoundProperties)
+            ElseIf TypeOf proppack Is ElectrolyteNRTLPropertyPackage Then
+                wden = CType(proppack, ElectrolyteNRTLPropertyPackage).m_elec.LiquidDensity(Vxns, T, CompoundProperties)
+            ElseIf TypeOf proppack Is LIQUAC2PropertyPackage Then
+                wden = CType(proppack, LIQUAC2PropertyPackage).m_elec.LiquidDensity(Vxns, T, CompoundProperties)
+            ElseIf TypeOf proppack Is DebyeHuckelPropertyPackage Then
+                wden = CType(proppack, DebyeHuckelPropertyPackage).m_elec.LiquidDensity(Vxns, T, CompoundProperties)
+            End If
+
+            i = 0
+            Do
+                molality(i) = Vxl(i) / wtotal * wden / 1000
+                i += 1
+            Loop Until i = nc + 1
+
+            '' Molarities of non reactants/products.
+            Dim NonReactMolarities = 0
+            For j = 0 To nc
+                If Not Me.ComponentIDs.Contains(CompoundProperties(j).Name) Then
+                    NonReactMolarities += molality(j)
+                End If
+            Next
+
+
+
+            ''' Calc error from thermo molarity:
+            Dim ReactConcThermoError(c) As Double
+            For i = 0 To N.Count - 1
+                For j = 0 To nc
+                    If CompoundProperties(j).Name = Me.ComponentIDs(i) Then
+                        ReactConcThermoError(i) = ReactionConc(i) / (1 - NonReactMolarities) - molality(j)
+                    End If
+                Next
+            Next
+
+            ''' We assume that the calculated values from the minimizer of molarities is the correct ones.
+            For i = 0 To N.Count - 1
+                For j = 0 To nc
+                    If CompoundProperties(j).Name = Me.ComponentIDs(i) Then
+                        molality(j) = ReactionConc(i) / (1 - NonReactMolarities)
+                    End If
+                Next
+            Next
+
+
+
+            For i = 0 To N.Count() - 1
+                N(ComponentIDs(i)) = ReactionMolFrac(i) / (1 - Ninerts)
+                DN(ComponentIDs(i)) = N(ComponentIDs(i)) - N0(ComponentIDs(i))
+            Next
+
+            Dim unscaled_extents(r) As Double
+
+
+            For j = 0 To r
+                unscaled_extents(j) = 0
+                i = 0
+                For Each s As String In N.Keys
+                    If E(i, j) <> 0 Then
+                        unscaled_extents(j) += DN(s) / E(i, j)
+                    End If
+                    i += 1
+                Next
+            Next
+
+
+
+
+
+            Dim activcoeff(nc) As Double
+
+            If ideal Then
+                For i = 0 To nc
+                    activcoeff(i) = 1.0#
+                Next
+            Else
+                If TypeOf proppack Is ExUNIQUACPropertyPackage Then
+                    activcoeff = CType(proppack, ExUNIQUACPropertyPackage).m_uni.GAMMA_MR(T, Vxl.AbsY(), CompoundProperties)
+                ElseIf TypeOf proppack Is ElectrolyteNRTLPropertyPackage Then
+                    activcoeff = CType(proppack, ElectrolyteNRTLPropertyPackage).m_enrtl.GAMMA_MR(T, Vxl.AbsY(), CompoundProperties)
+                ElseIf TypeOf proppack Is LIQUAC2PropertyPackage Then
+                    activcoeff = CType(proppack, LIQUAC2PropertyPackage).m_liquac.GAMMA_MR(T, Vxl.AbsY(), CompoundProperties)
+                ElseIf TypeOf proppack Is DebyeHuckelPropertyPackage Then
+                    activcoeff = CType(proppack, DebyeHuckelPropertyPackage).m_dh.GAMMA_MR(T, Vxl.AbsY(), CompoundProperties)
+                End If
+            End If
+
+            Dim CP(nc) As Double
+            Dim prod(Me.Reactions.Count - 1) As Double
+
+            For i = 0 To nc
+                If CompoundProperties(i).IsIon Then
+                    CP(i) = molality(i) * activcoeff(i)
+                ElseIf CompoundProperties(i).IsSalt Then
+                    CP(i) = molality(i) * activcoeff(i)
+                Else
+                    CP(i) = Vxl(i) * activcoeff(i)
+                End If
+            Next
+
+            For i = 0 To Me.Reactions.Count - 1
+                prod(i) = 1.0
+                For Each s As String In Me.ComponentIDs
+                    With proppack.CurrentMaterialStream.Flowsheet.Reactions(Me.Reactions(i))
+                        If .Components.ContainsKey(s) Then
+                            For j = 0 To nc
+                                If CompoundProperties(j).Name = s Then
+                                    If CP(j) > 1.0E-45 Then
+                                        prod(i) *= CP(j) ^ .Components(s).StoichCoeff
+                                    End If
+                                    Exit For
+                                End If
+                            Next
+                        End If
+                    End With
+                Next
+            Next
+
+            Dim kr, ktot, prodtot As Double
+
+            ktot = 1.0
+            prodtot = 1.0
+
+            Dim reaction As IReaction
+
+            Pval = ReturnPenaltyValue(Vxl)
+
+            Dim f(log10Conc.Length - 1) As Double
+
+
+
+            Dim compAmountDict As Dictionary(Of String, Double)
+
+
+            For i = 0 To CompoundProperties.Count() - 1
+                If Me.CompoundProperties(i).Tag <> "" Then
+                    compAmountDict.Add(CompoundProperties(i).Tag, molality(i))
+                End If
+            Next
+
+
+
+            For i = 0 To Me.Reactions.Count - 1
+                reaction = proppack.CurrentMaterialStream.Flowsheet.Reactions(Me.Reactions(i))
+                kr = reaction.EvaluateK(T + reaction.Approach, proppack, compAmountDict)
+                prodtot *= Math.Abs(prod(i))
+                f(i) = Math.Log(prod(i) / kr) - 1
+                'If Math.Abs(Pval) > 0.01 Then
+                '    If PenaltyValueScheme = 0 Then
+                '
+                '    ElseIf PenaltyValueScheme = 1 Then
+                '        f(i) *= Pval * 10000
+                '    ElseIf PenaltyValueScheme = 2 Then
+                '        If Math.Abs(Pval * f(i)) > 1.0 Then
+                '            f(i) = Pval * f(i)
+                '        Else
+                '            f(i) = Pval / f(i)
+                '        End If
+                '    ElseIf PenaltyValueScheme = 3 Then
+                '        If Math.Abs(f(i)) >= 0.0 And Math.Abs(f(i)) < 1.0 Then
+                '            f(i) = Pval / f(i)
+                '        Else
+                '            f(i) = Pval * f(i)
+                '        End If
+                '    End If
+                '    If Math.Abs(f(i)) < 1.0 Then f(i) = 1.0 / f(i)
+                'End If
+            Next
+
+            Dim ErrorValue = Math.Sqrt(f.AbsSqrSumY() + ElementBalance.Values().ToArray().AbsSqrSumY() + Math.Abs(MassBalance) ^ 2)   ' +  Math.Abs(ReactBalances.Sum())   '+ ReactConcThermoError.AbsSumY()
+
+            Return ErrorValue
+        End Function
+
+
+        Private Function ReactionBalanceError(comp_MolsFrac As Double()) As Double()
+            Dim nc = Me.CompoundProperties.Count - 1
+            Dim Vxl(nc) As Double
+            'Vf0
+            'For i = 0 To nc
+            '    Vxl(i) = Vxl0(i)
+            'Next
+
+            'r = Me.Reactions.Count - 1
+            'c = Me.ComponentIDs.Count - 1
+            'ReDim E(c, r)
+
+            Dim errorReaction(r) As Double
+            Dim reactError = Convert.ToDouble(0)
+            For i = 0 To r
+                reactError = 0
+                For j = 0 To c
+                    If (Me.E(j, i) <> 0) Then
+                        reactError += Me.N0(ComponentIDs(j)) / Me.E(j, i) - comp_MolsFrac(j) / Me.E(j, i)
+                    End If
+                Next
+                errorReaction(i) = reactError
+            Next
+
+            Return errorReaction
+
+            'For i = 0 To Me.Reactions.Count - 1
+            '    With proppack.CurrentMaterialStream.Flowsheet.Reactions(Me.Reactions(i))
+            '        For Each s As String In Me.ComponentIDs
+            '            If .Components.ContainsKey(s) Then
+            '                For j = 0 To nc
+            '                    If CompoundProperties(j).Name = s Then
+            '                        Exit For
+            '                    End If
+            '                Next
+            '            End If
+            '        Next
+            '    End With
+            '
+            'Next
+        End Function
+
+        Private Function ElementBalanceError(molFracs() As Double) As Dictionary(Of String, Double)
+            Dim Errorval As Dictionary(Of String, Double) = New Dictionary(Of String, Double)
+            For i = 0 To CompoundProperties.Count() - 1
+                'CompoundProperties(i).Elements
+                For Each key In CompoundProperties(i).Elements.Keys()
+                    If Not Errorval.ContainsKey(key) Then
+                        Errorval.Add(key, 0.0)
+                    End If
+                Next
+            Next
+
+            For i = 0 To ComponentIDs.Count() - 1
+                For j = 0 To CompoundProperties.Count() - 1
+                    If ComponentIDs(i) = CompoundProperties(j).Name Then
+                        For Each element In CompoundProperties(j).Elements.Keys()
+                            Errorval(element) += (molFracs(i) - N0(CompoundProperties(j).Name)) * CompoundProperties(j).Elements(element)
+                        Next
+                    End If
+                Next
+            Next
+
+
+            Return Errorval
+
+        End Function
+
+        Private Function MassBalanceError(molFracs() As Double) As Double
+            Dim ErrorMass = 0.0
+            For i = 0 To ComponentIDs.Count() - 1
+                For j = 0 To CompoundProperties.Count() - 1
+                    If ComponentIDs(i) = CompoundProperties(j).Name Then
+                        ErrorMass += (molFracs(i) - N0(CompoundProperties(j).Name)) * CompoundProperties(j).Molar_Weight
+                    End If
+                Next
+            Next
+
+            Return ErrorMass
+
+        End Function
+
 
         Private Function ReturnPenaltyValue(Vx() As Double) As Double
 
