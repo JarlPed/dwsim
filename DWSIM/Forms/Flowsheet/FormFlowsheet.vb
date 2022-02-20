@@ -136,6 +136,8 @@ Public Class FormFlowsheet
 
     Public simulate365File As S365File = Nothing
 
+    Public Shared DoNotOpenSimulationWizard As Boolean = False
+
 #End Region
 
 #Region "    Form Event Handlers "
@@ -537,28 +539,31 @@ Public Class FormFlowsheet
             Me.Invalidate()
             Application.DoEvents()
 
-            If Not DWSIM.App.IsRunningOnMono Then
-                Dim fw As New FormSimulWizard
-                With fw
-                    .CurrentFlowsheet = Me
-                    .StartPosition = FormStartPosition.CenterScreen
-                    .WindowState = FormWindowState.Normal
-                    .ShowDialog(Me)
-                    If .switch Then
-                        With Me.FrmStSim1
-                            .WindowState = FormWindowState.Normal
-                            .StartPosition = FormStartPosition.CenterScreen
-                            .ShowDialog(Me)
-                        End With
-                    End If
-                End With
-            Else
-                With Me.FrmStSim1
-                    .WindowState = FormWindowState.Normal
-                    .StartPosition = FormStartPosition.CenterScreen
-                    .ShowDialog(Me)
-                End With
+            If Not DoNotOpenSimulationWizard Then
+                If Not DWSIM.App.IsRunningOnMono Then
+                    Dim fw As New FormSimulWizard
+                    With fw
+                        .CurrentFlowsheet = Me
+                        .StartPosition = FormStartPosition.CenterScreen
+                        .WindowState = FormWindowState.Normal
+                        .ShowDialog(Me)
+                        If .switch Then
+                            With Me.FrmStSim1
+                                .WindowState = FormWindowState.Normal
+                                .StartPosition = FormStartPosition.CenterScreen
+                                .ShowDialog(Me)
+                            End With
+                        End If
+                    End With
+                Else
+                    With Me.FrmStSim1
+                        .WindowState = FormWindowState.Normal
+                        .StartPosition = FormStartPosition.CenterScreen
+                        .ShowDialog(Me)
+                    End With
+                End If
             End If
+
 
         Else
 
@@ -3629,6 +3634,26 @@ Public Class FormFlowsheet
         Else
             FormScript.RunScript_PythonNET(script.Value.Title, script.Value.ScriptText, Me)
         End If
+
+    End Sub
+
+    Public Sub RequestSave() Implements IFlowsheet.RequestSave
+
+        FormMain.SaveFile(True)
+
+    End Sub
+
+    Public Sub RequestSaveWithDirectory(directory As String) Implements IFlowsheet.RequestSaveWithDirectory
+
+        Options.FilePath = Path.Combine(directory, Options.SimulationName + ".dwxmz")
+        FormMain.SaveFile(True)
+
+    End Sub
+
+    Public Sub RequestSaveWithPath(filepath As String) Implements IFlowsheet.RequestSaveWithPath
+
+        Options.FilePath = filepath
+        FormMain.SaveFile(True)
 
     End Sub
 
