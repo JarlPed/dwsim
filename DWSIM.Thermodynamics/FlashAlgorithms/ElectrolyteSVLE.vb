@@ -391,7 +391,7 @@ Namespace PropertyPackages.Auxiliary.FlashAlgorithms
                                 If (molality(i) > 0) Then
                                     initLog10Conc(j) = Math.Log10(molality(i))
                                 Else
-                                    initLog10Conc(j) = -80
+                                    initLog10Conc(j) = -2
                                 End If
                             End If
                         Next
@@ -421,7 +421,8 @@ Namespace PropertyPackages.Auxiliary.FlashAlgorithms
 
                                   log10newConc = solver1.Solve(fbody, functiongradient:=Nothing, vars:=initLog10Conc, lbounds:=LBound, ubounds:=UBound)
                                   'Dim solution = solver1.FindMinimum(linfbody, MathNet.Numerics.LinearAlgebra.CreateVector.Dense(initLog10Conc))
-
+                                  PenaltyValueScheme = 1
+                                  log10newConc = solver1.Solve(fbody, functiongradient:=Nothing, vars:=log10newConc, lbounds:=LBound, ubounds:=UBound)
 
                                   Dim errval = fbody(log10newConc)
 
@@ -429,7 +430,7 @@ Namespace PropertyPackages.Auxiliary.FlashAlgorithms
                                   'solution = solver1.FindMinimum(linfbodyNonIdeal, solution.MinimizingPoint)
 
 
-                                  errval = fbodyNonIdeal(log10newConc)
+                                  'errval = fbodyNonIdeal(log10newConc)
 
                                   Dim k As Integer
                                   For k = 0 To log10newConc.Count() - 1
@@ -845,11 +846,11 @@ Namespace PropertyPackages.Auxiliary.FlashAlgorithms
 
         'End Function
 
-        Private Function FunctionValue3N(ByVal log10Conc() As Double, ideal As Boolean) As Double
+        Private Function FunctionValue3N(ByVal log10Conc() As Double, ByVal ideal As Boolean) As Double
             If Double.IsNaN(log10Conc.Sum) Then Throw New Exception("Convergence Error")
 
             Dim nc = Me.CompoundProperties.Count - 1
-            'Me.ComponentIDs
+
 
             Dim Vxl(nc) As Double
 
@@ -860,6 +861,20 @@ Namespace PropertyPackages.Auxiliary.FlashAlgorithms
 
             Dim i = 0
 
+            Dim Vwl0 = proppack.AUX_CONVERT_MOL_TO_MASS(Vxl0)
+            Dim weigthFractionReactMix = 0
+            Dim j = 0
+            For i = 0 To N.Count - 1
+                For j = 0 To nc
+                    If CompoundProperties(j).Name = Me.ComponentIDs(i) Then
+                        weigthFractionReactMix += Vwl0(j)
+                    End If
+                Next
+            Next
+
+
+
+
             For i = 0 To nc
                 Vxl(i) = Vxl0(i)
             Next
@@ -868,25 +883,51 @@ Namespace PropertyPackages.Auxiliary.FlashAlgorithms
             For i = 0 To N.Count() - 1
                 ReactionConc(i) = Math.Pow(10, log10Conc(i))
             Next
-
             Dim ReactionMolFrac(N.Count() - 1) As Double
             For i = 0 To N.Count() - 1
                 ReactionMolFrac(i) = ReactionConc(i) / ReactionConc.Sum()
+            Next
+            Dim ReactMolarMass = 0.0#
+            For i = 0 To N.Count() - 1
+                For j = 0 To nc
+                    If ComponentIDs(i) = CompoundProperties(j).Name Then
+                        ReactMolarMass += ReactionMolFrac(i) * CompoundProperties(j).Molar_Weight
+                    End If
+                Next
+            Next
+
+            Dim ReactMassFrac(N.Count() - 1) As Double
+            For i = 0 To N.Count() - 1
+                For j = 0 To nc
+                    If ComponentIDs(i) = CompoundProperties(j).Name Then
+                        ReactMassFrac(i) = ReactionMolFrac(i) * CompoundProperties(j).Molar_Weight / ReactMolarMass
+                    End If
+                Next
+            Next
+
+            Dim Vwl(nc) As Double
+            Vwl0.CopyTo(Vwl, 0)
+            For i = 0 To N.Count - 1
+                For j = 0 To nc
+                    If CompoundProperties(j).Name = Me.ComponentIDs(i) Then
+                        Vwl(j) = ReactMassFrac(i) * weigthFractionReactMix
+                    End If
+                Next
             Next
 
 
 
             ' This is not correct, the reactions may create more mols from a single mole of reactants.
-            i = 0
-            Dim j = 0
-            For i = 0 To N.Count - 1
-                For j = 0 To nc
-                    If CompoundProperties(j).Name = Me.ComponentIDs(i) Then
-                        Vxl(j) = ReactionMolFrac(i) / (1 - Ninerts)
 
-                    End If
-                Next
-            Next
+            ''For i = 0 To N.Count - 1
+            ''    For j = 0 To nc
+            ''        If CompoundProperties(j).Name = Me.ComponentIDs(i) Then
+            ''            Vxl(j) = ReactionMolFrac(i) * (1 - Ninerts)
+            ''
+            ''        End If
+            ''    Next
+            ''Next
+            Vxl = proppack.AUX_CONVERT_MASS_TO_MOL(Vwl)
 
 
 
@@ -975,22 +1016,25 @@ Namespace PropertyPackages.Auxiliary.FlashAlgorithms
 
             For j = 0 To r
                 unscaled_extents(j) = 0
-                i = 0
                 For Each s As String In N.Keys
-                    If E(i, j) <> 0 Then
-                        unscaled_extents(j) += DN(s) / E(i, j)
+                    If E(ComponentIDs.IndexOf(s), j) <> 0 Then
+                        unscaled_extents(j) += DN(s) / E(ComponentIDs.IndexOf(s), j)
                     End If
-                    i += 1
                 Next
             Next
 
 
+            'Dim Mxf = Me.proppack.AUX_CONVERT_MOL_TO_MASS(molFracs)
+            'Dim Mxf0 = Me.proppack.AUX_CONVERT_MOL_TO_MASS(N0.Values().ToArray())
+
 
             Dim ReactBalances = ReactionBalanceError(ReactionMolFrac)
-            Dim ElementBalance = ElementBalanceError(ReactionMolFrac)
-            Dim MassBalance = MassBalanceError(ReactionMolFrac)
+            Dim ElementBalance = ElementBalanceError(Vwl, Vwl0)
+            'Dim MassBalance = MassBalanceError(Vwl, Vwl0)
             Dim ChargeBalance = ChargeBalanceError(ReactionMolFrac)
-            Dim ChemStrucBalance = ChemStrucBalanceError(ReactionMolFrac)
+            'Dim ChemStrucBalance = ChemStrucBalanceError(ReactionMolFrac)
+            Dim FalseConv = FalseConversionErrorFunc()
+            Dim ChemRevBalance = ReactionReversalError()
 
             Dim ElementNames = ElementBalance.Keys().ToArray()
 
@@ -1104,7 +1148,13 @@ Namespace PropertyPackages.Auxiliary.FlashAlgorithms
                 'End If
             Next
 
-            Dim ErrorValue = Math.Sqrt(f.AbsSqrSumY() + ElementBalance.Values().ToArray().AbsSqrSumY() + Math.Abs(MassBalance) ^ 2 + Math.Abs(ChargeBalance) ^ 2) '+ ReactBalances.AbsSqrSumY())   ' +  Math.Abs(ReactBalances.Sum())   '+ ReactConcThermoError.AbsSumY()
+
+            ''
+            Dim ErrorValue = Math.Sqrt(f.AbsSqrSumY() + 10 * ElementBalance.Values().ToArray().AbsSqrSumY() + 50 * Math.Abs(ChargeBalance) ^ 2) '+ Math.Abs(MassBalance) ^ 2 + ReactBalances.AbsSqrSumY())   ' +  Math.Abs(ReactBalances.Sum())   '+ ReactConcThermoError.AbsSumY()
+
+            If PenaltyValueScheme = 1 And False Then
+                ErrorValue = Math.Sqrt(ErrorValue ^ 2 + ChemRevBalance.AbsSqrSumY())
+            End If
 
             Return ErrorValue
         End Function
@@ -1152,10 +1202,83 @@ Namespace PropertyPackages.Auxiliary.FlashAlgorithms
             'Next
         End Function
 
-        Private Function ElementBalanceError(molFracs() As Double) As Dictionary(Of String, Double)
+
+        Private Function FalseConversionErrorFunc() As Dictionary(Of String, Double)
+            Dim ErrorVal = New Dictionary(Of String, Double)
+            'For i = 0 To N.Count() - 1
+            '    If (N0(ComponentIDs(i)) - DN(ComponentIDs(i)) < 0) Then
+            '        ErrorVal.Add(ComponentIDs(i), N0(ComponentIDs(i)) - DN(ComponentIDs(i)))
+            '    End If
+            'Next
+
+            For i = 0 To r
+
+            Next
+
+            For j = 0 To c
+                ErrorVal.Add(ComponentIDs(j), N(ComponentIDs(j)) - (N0(ComponentIDs(j)) + DN(ComponentIDs(j))))
+            Next
+
+
+        End Function
+
+
+        Private Function ReactionReversalError() As Double()
+            Dim ErrorVal(c) As Double
+            '' Reverse the reaction, by converting the moles of created products back to reactants, such that the initial product value is reproduced.
+
+            Dim revN(c) As Double
+            Dim reactionRevMolIncrease = 0
+
+            N.Values().ToArray().CopyTo(revN, 0)
+
+            Dim revConvs = New Dictionary(Of Integer, Double)
+            Dim revMolsBases = 0.0
+
+            For passesoverReacts = 0 To r
+                For i = 0 To r
+                    revConvs.Clear()
+                    For k = 0 To c
+                        If E(k, i) > 0 Then '' ensure that comp j is a reactant and k is product
+                            revConvs.Add(k, (revN(k) - N0(ComponentIDs(k))) / E(k, i))
+                        End If
+                    Next
+
+                    If revConvs.Values().Min() >= 0 Then
+                        revMolsBases = revConvs.Values().Min()
+                    Else
+                        revMolsBases = revConvs.Values().Max()
+                    End If
+
+
+                    reactionRevMolIncrease = 0.0
+                    For j = 0 To c
+                        If E(j, i) <> 0 Then
+                            reactionRevMolIncrease += -E(j, i) * revMolsBases
+                        End If
+                    Next
+                    For j = 0 To c
+                        If E(j, i) = 0 Then
+                            revN(j) *= 1 / (1 + reactionRevMolIncrease)
+                        Else
+                            revN(j) += -E(j, i) * revMolsBases
+                        End If
+                    Next
+                Next
+
+            Next
+
+
+            For i = 0 To c
+                ErrorVal(i) = revN(i) - N0(ComponentIDs(i))
+            Next
+
+            Return ErrorVal
+
+        End Function
+
+        Private Function ElementBalanceError(ByVal massFracs As Double(), massFracsInit As Double()) As Dictionary(Of String, Double)
             Dim Errorval As Dictionary(Of String, Double) = New Dictionary(Of String, Double)
-            Dim Mxf = Me.proppack.AUX_CONVERT_MOL_TO_MASS(molFracs)
-            Dim Mxf0 = Me.proppack.AUX_CONVERT_MOL_TO_MASS(N0.Values().ToArray())
 
             For i = 0 To CompoundProperties.Count() - 1
                 'CompoundProperties(i).Elements
@@ -1166,13 +1289,10 @@ Namespace PropertyPackages.Auxiliary.FlashAlgorithms
                 Next
             Next
 
-            For i = 0 To ComponentIDs.Count() - 1
-                For j = 0 To CompoundProperties.Count() - 1
-                    If ComponentIDs(i) = CompoundProperties(j).Name Then
-                        For Each element In CompoundProperties(j).Elements.Keys()
-                            Errorval(element) += (Mxf(i) - Mxf0(i)) * CompoundProperties(j).Elements(element)
-                        Next
-                    End If
+
+            For j = 0 To CompoundProperties.Count() - 1
+                For Each element In CompoundProperties(j).Elements.Keys()
+                    Errorval(element) += (massFracs(j) - massFracsInit(j)) * CompoundProperties(j).Elements(element)
                 Next
             Next
 
@@ -1181,15 +1301,14 @@ Namespace PropertyPackages.Auxiliary.FlashAlgorithms
 
         End Function
 
-        Private Function MassBalanceError(ByVal molFracs As Double()) As Double
+        Private Function MassBalanceError(ByVal massFracs As Double(), ByVal massFracsInit As Double()) As Double
 
-            Dim Mxf = Me.proppack.AUX_CONVERT_MOL_TO_MASS(molFracs)
-            Dim Mxf0 = Me.proppack.AUX_CONVERT_MOL_TO_MASS(N0.Values().ToArray())
+
             Dim ErrorMass = 0.0
             For i = 0 To ComponentIDs.Count() - 1
                 For j = 0 To CompoundProperties.Count() - 1
                     If ComponentIDs(i) = CompoundProperties(j).Name Then
-                        ErrorMass += (Mxf(i) - Mxf0(i)) * CompoundProperties(j).Molar_Weight
+                        ErrorMass += (massFracs(i) - massFracsInit(i)) * CompoundProperties(j).Molar_Weight
                     End If
                 Next
             Next
@@ -1217,30 +1336,30 @@ Namespace PropertyPackages.Auxiliary.FlashAlgorithms
 
         End Function
 
-        Private Function ChemStrucBalanceError(ByVal molFracs As Double()) As Dictionary(Of String, Double)
-            Dim Errorval = New Dictionary(Of String, Double)
-
-            For j = 0 To CompoundProperties.Count() - 1
-                For Each ChemStructure In CompoundProperties(j).MODFACGroups
-                    Errorval.Add(ChemStructure, 0.0)
-                Next
-            Next
-
-
-            'For i = 0 To ComponentIDs.Count() - 1
-            '    For j = 0 To CompoundProperties.Count() - 1
-            '        If ComponentIDs(i) = CompoundProperties(j).Name Then
-            '            For Each element In CompoundProperties(j).Elements.Keys()
-            '                Errorval() += molFracs(i) - N0(ComponentIDs(j))
-            '            Next
-            '        End If
-            '    Next
-            'Next
-
-
-            Return Errorval
-
-        End Function
+        ''Private Function ChemStrucBalanceError(ByVal molFracs As Double()) As Dictionary(Of String, Double)
+        ''    Dim Errorval = New Dictionary(Of String, Double)
+        ''
+        ''    For j = 0 To CompoundProperties.Count() - 1
+        ''        For Each ChemStructure In CompoundProperties(j).MODFACGroups
+        ''            Errorval.Add(ChemStructure, 0.0)
+        ''        Next
+        ''    Next
+        ''
+        ''
+        ''    'For i = 0 To ComponentIDs.Count() - 1
+        ''    '    For j = 0 To CompoundProperties.Count() - 1
+        ''    '        If ComponentIDs(i) = CompoundProperties(j).Name Then
+        ''    '            For Each element In CompoundProperties(j).Elements.Keys()
+        ''    '                Errorval() += molFracs(i) - N0(ComponentIDs(j))
+        ''    '            Next
+        ''    '        End If
+        ''    '    Next
+        ''    'Next
+        ''
+        ''
+        ''    Return Errorval
+        ''
+        ''End Function
 
 
         Private Function ReturnPenaltyValue(Vx() As Double) As Double
