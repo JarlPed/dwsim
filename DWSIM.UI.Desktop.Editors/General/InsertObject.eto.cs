@@ -91,6 +91,12 @@ namespace DWSIM.UI.Desktop.Editors
                     case "Splitter":
                         tobj = ObjectType.NodeOut;
                         break;
+                    case "EnergyMixer":
+                        tobj = ObjectType.EnergyMixer;
+                        break;
+                    case "EnergySplitter":
+                        tobj = ObjectType.EnergySplitter;
+                        break;
                     case "Pump":
                         tobj = ObjectType.Pump;
                         break;

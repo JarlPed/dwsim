@@ -201,6 +201,12 @@
   <data name="DG_Name" xml:space="preserve">
     <value>Digital Gauge</value>
   </data>
+  <data name="EMIX_Desc" xml:space="preserve">
+    <value>Mixes multiple Energy Streams into a single one</value>
+  </data>
+  <data name="EMIX_Name" xml:space="preserve">
+    <value>Energy Mixer</value>
+  </data>
   <data name="EQUIL_Desc" xml:space="preserve">
     <value>Supports equilibrium constant-defined reactions</value>
   </data>
@@ -212,6 +218,12 @@
   </data>
   <data name="ERECY_Name" xml:space="preserve">
     <value>Energy Recycle Block</value>
+  </data>
+  <data name="ESPLIT_Desc" xml:space="preserve">
+    <value>Split a single Energy Stream into multiple ones</value>
+  </data>
+  <data name="ESPLIT_Name" xml:space="preserve">
+    <value>Energy Splitter</value>
   </data>
   <data name="ESTR_Desc" xml:space="preserve">
     <value>Energy flow from/to Unit Operations</value>

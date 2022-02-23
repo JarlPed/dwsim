@@ -450,6 +450,14 @@ Imports DWSIM.Thermodynamics.AdvancedEOS
 
                 Return Me.SimulationObjects(AddObjectToSurface(ObjectType.NodeOut, x, y, tag))
 
+            Case "Energy Mixer"
+
+                Return Me.SimulationObjects(AddObjectToSurface(ObjectType.EnergyMixer, x, y, tag))
+
+            Case "Energy Splitter"
+
+                Return Me.SimulationObjects(AddObjectToSurface(ObjectType.EnergySplitter, x, y, tag))
+
             Case "Pump"
 
                 Return Me.SimulationObjects(AddObjectToSurface(ObjectType.Pump, x, y, tag))

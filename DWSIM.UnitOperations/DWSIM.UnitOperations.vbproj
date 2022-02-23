@@ -240,6 +240,24 @@
     <Compile Include="EditingForms\EditingForm_CAPEOPENUO.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="EditingForms\EditingForm_EnergyMixer.Designer.vb">
+      <DependentUpon>EditingForm_EnergyMixer.vb</DependentUpon>
+    </Compile>
+    <Compile Include="EditingForms\EditingForm_EnergyMixer.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="EditingForms\EditingForm_EnergySplitter1.Designer.vb">
+      <DependentUpon>EditingForm_EnergySplitter1.vb</DependentUpon>
+    </Compile>
+    <Compile Include="EditingForms\EditingForm_EnergySplitter1.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="EditingForms\EditingForm_EnergySplitter.Designer.vb">
+      <DependentUpon>EditingForm_EnergySplitter.vb</DependentUpon>
+    </Compile>
+    <Compile Include="EditingForms\EditingForm_EnergySplitter.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="EditingForms\EditingForm_Switch.Designer.vb">
       <DependentUpon>EditingForm_Switch.vb</DependentUpon>
     </Compile>
@@ -632,6 +650,7 @@
     <Compile Include="TypeResolver\Resolver.vb" />
     <Compile Include="CAPE-OPEN\CustomUO_CO.vb" />
     <Compile Include="UnitOperations\DummyUO.vb" />
+    <Compile Include="UnitOperations\EnergyMixer.vb" />
     <Compile Include="UnitOperations\PythonScriptUO.vb" />
     <Compile Include="UnitOperations\FlowsheetUO.vb" />
     <Compile Include="UnitOperations\OrificePlate.vb" />
@@ -650,6 +669,7 @@
     <Compile Include="UnitOperations\RigorousColumnSolvers\SumRates.vb" />
     <Compile Include="UnitOperations\RigorousColumnSolvers\Tomich.vb" />
     <Compile Include="UnitOperations\ShortcutColumn.vb" />
+    <Compile Include="UnitOperations\EnergySplitter.vb" />
     <Compile Include="UnitOperations\Spreadsheet.vb" />
     <Compile Include="UnitOperations\Filter.vb" />
     <Compile Include="UnitOperations\Heater.vb" />
@@ -697,6 +717,33 @@
     </EmbeddedResource>
     <EmbeddedResource Include="EditingForms\EditingForm_CustomUO.de.resx">
       <DependentUpon>EditingForm_CustomUO.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EditingForms\EditingForm_EnergyMixer.de.resx">
+      <DependentUpon>EditingForm_EnergyMixer.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EditingForms\EditingForm_EnergyMixer.en.resx">
+      <DependentUpon>EditingForm_EnergyMixer.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EditingForms\EditingForm_EnergyMixer.resx">
+      <DependentUpon>EditingForm_EnergyMixer.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EditingForms\EditingForm_EnergySplitter1.de.resx">
+      <DependentUpon>EditingForm_EnergySplitter1.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EditingForms\EditingForm_EnergySplitter1.en.resx">
+      <DependentUpon>EditingForm_EnergySplitter1.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EditingForms\EditingForm_EnergySplitter1.resx">
+      <DependentUpon>EditingForm_EnergySplitter1.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EditingForms\EditingForm_EnergySplitter.de.resx">
+      <DependentUpon>EditingForm_EnergySplitter.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EditingForms\EditingForm_EnergySplitter.en.resx">
+      <DependentUpon>EditingForm_EnergySplitter.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EditingForms\EditingForm_EnergySplitter.resx">
+      <DependentUpon>EditingForm_EnergySplitter.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="EditingForms\EditingForm_Switch.en.resx">
       <DependentUpon>EditingForm_Switch.vb</DependentUpon>
@@ -1697,6 +1744,18 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\lightning.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\uo_esplit_16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\uo_esplit_32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\uo_emixer_16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\uo_emixer_32.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

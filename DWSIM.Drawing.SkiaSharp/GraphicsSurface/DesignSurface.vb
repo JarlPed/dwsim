@@ -1118,11 +1118,11 @@ Public Class GraphicsSurface
                     ElseIf gObjFrom.ObjectType = ObjectType.EnergyStream And gObjTo.ObjectType = ObjectType.MaterialStream Then
                         Throw New Exception("This connection is not allowed.")
                     End If
-                    If gObjTo.IsEnergyStream = False Then
+                    If Not gObjTo.IsEnergyStream Then
                         If Not gObjFrom.IsEnergyStream Then
                             If tidx = -1 Then
                                 For Each InConSlot In gObjTo.InputConnectors
-                                    If Not InConSlot.IsAttached And InConSlot.Type = ConType.ConIn Then
+                                    If Not InConSlot.IsAttached And InConSlot.Type = ConType.ConIn  Then
                                         EndPos.X = InConSlot.Position.X
                                         EndPos.Y = InConSlot.Position.Y
                                         InConSlot.IsAttached = True
@@ -1151,11 +1151,12 @@ Public Class GraphicsSurface
                                     End If
                                 Next
                             Else
-                                If Not gObjTo.InputConnectors(tidx).IsAttached And gObjTo.InputConnectors(tidx).Type = ConType.ConEn Then
+                                If Not gObjTo.InputConnectors(tidx).IsAttached Then
                                     InConSlot = gObjTo.InputConnectors(tidx)
                                     EndPos.X = InConSlot.Position.X
                                     EndPos.Y = InConSlot.Position.Y
                                     InConSlot.IsAttached = True
+                                    'gObjFrom.OutputConnectors(0).IsAttached = True
                                     con2OK = True
                                 End If
                             End If
@@ -1187,7 +1188,7 @@ Public Class GraphicsSurface
                         Select Case gObjFrom.ObjectType
                             Case ObjectType.Cooler, ObjectType.Heater, ObjectType.Pipe, ObjectType.Expander, ObjectType.ShortcutColumn, ObjectType.DistillationColumn, ObjectType.AbsorptionColumn,
                             ObjectType.ReboiledAbsorber, ObjectType.RefluxedAbsorber, ObjectType.OT_EnergyRecycle, ObjectType.ComponentSeparator, ObjectType.SolidSeparator,
-                            ObjectType.Filter, ObjectType.CustomUO, ObjectType.CapeOpenUO, ObjectType.FlowsheetUO, ObjectType.External, ObjectType.RCT_Conversion
+                            ObjectType.Filter, ObjectType.CustomUO, ObjectType.CapeOpenUO, ObjectType.FlowsheetUO, ObjectType.External, ObjectType.RCT_Conversion, ObjectType.EnergyMixer, ObjectType.EnergySplitter
                                 GoTo 100
                             Case Else
                                 Throw New Exception("This connection is not allowed.")
@@ -1195,7 +1196,7 @@ Public Class GraphicsSurface
 100:                    If gObjFrom.ObjectType <> ObjectType.CapeOpenUO And gObjFrom.ObjectType <> ObjectType.CustomUO And gObjFrom.ObjectType <> ObjectType.DistillationColumn _
                         And gObjFrom.ObjectType <> ObjectType.AbsorptionColumn And gObjFrom.ObjectType <> ObjectType.OT_EnergyRecycle And gObjFrom.ObjectType <> ObjectType.External _
                                                     And gObjFrom.ObjectType <> ObjectType.RefluxedAbsorber And gObjFrom.ObjectType <> ObjectType.ReboiledAbsorber _
-                                                    And gObjFrom.ObjectType <> ObjectType.RCT_Conversion Then
+                                                    And gObjFrom.ObjectType <> ObjectType.RCT_Conversion And gObjFrom.ObjectType <> ObjectType.EnergyMixer And gObjFrom.ObjectType <> ObjectType.EnergySplitter Then
                             If Not gObjFrom.EnergyConnector.IsAttached Then
                                 StartPos.X = gObjFrom.EnergyConnector.Position.X
                                 StartPos.Y = gObjFrom.EnergyConnector.Position.Y

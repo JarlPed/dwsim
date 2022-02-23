@@ -529,11 +529,13 @@ Namespace UnitOperations
             Dim vCon As Interfaces.IConnectionPoint
 
             'Validate input connections.
-            For Each vCon In Me.GraphicObject.InputConnectors
-                If Not vCon.IsAttached Then
-                    Throw New Exception(Me.FlowSheet.GetTranslatedString("Verifiqueasconexesdo"))
-                End If
-            Next
+            If GraphicObject.Description IsNot "Energy Stream" Then
+                For Each vCon In Me.GraphicObject.InputConnectors
+                    If Not vCon.IsAttached And False Then
+                        Throw New Exception(Me.FlowSheet.GetTranslatedString("Verifiqueasconexesdo"))
+                    End If
+                Next
+            End If
 
             'Validate output connections.
             For Each vCon In Me.GraphicObject.OutputConnectors

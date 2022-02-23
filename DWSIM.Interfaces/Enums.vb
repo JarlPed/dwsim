@@ -566,6 +566,10 @@ Namespace Enums.GraphicObjects
         NodeIn
         NodeOut
         NodeEn
+
+        EnergyMixer
+        EnergySplitter
+
         Pump
         Tank
         Vessel

@@ -681,6 +681,64 @@ Public Class FlowsheetSurface_SkiaSharp
                 Flowsheet.Collections.GraphicObjectCollection.Add(myDWOBJ.GraphicObject.Name, myDWOBJ.GraphicObject)
                 Flowsheet.Collections.FlowsheetObjectCollection.Add(myDWOBJ.Name, myDWOBJ)
                 FlowsheetSurface.DrawingObjects.Add(myDWOBJ.GraphicObject)
+            Case ObjectType.EnergyMixer
+                Dim myDWOBJ As EnergyMixer = CType(newobj, EnergyMixer)
+                With myDWOBJ.GraphicObject
+                    .Calculated = False
+                    .Name = "EMIX-" & Guid.NewGuid.ToString
+                    .Tag = searchtext & " (" & (objcount + 1).ToString & ")"
+                    .X = mpx
+                    .Y = mpy
+                    For Each con As ConnectionPoint In .InputConnectors
+                        con.AttachedConnector = Nothing
+                        con.IsAttached = False
+                    Next
+                    For Each con As ConnectionPoint In .OutputConnectors
+                        con.AttachedConnector = Nothing
+                        con.IsAttached = False
+                    Next
+                    If Not .SpecialConnectors Is Nothing Then
+                        For Each con As ConnectionPoint In .SpecialConnectors
+                            con.AttachedConnector = Nothing
+                            con.IsAttached = False
+                        Next
+                    End If
+                    .EnergyConnector.AttachedConnector = Nothing
+                    .EnergyConnector.IsAttached = False
+                End With
+                myDWOBJ.Name = myDWOBJ.GraphicObject.Name
+                Flowsheet.Collections.GraphicObjectCollection.Add(myDWOBJ.GraphicObject.Name, myDWOBJ.GraphicObject)
+                Flowsheet.Collections.FlowsheetObjectCollection.Add(myDWOBJ.Name, myDWOBJ)
+                FlowsheetSurface.DrawingObjects.Add(myDWOBJ.GraphicObject)
+            Case ObjectType.EnergySplitter
+                Dim myDWOBJ As UnitOperations.UnitOperations.EnergySplitter = CType(newobj, UnitOperations.UnitOperations.EnergySplitter)
+                With myDWOBJ.GraphicObject
+                    .Calculated = False
+                    .Name = "ESPLT-" & Guid.NewGuid.ToString
+                    .Tag = searchtext & " (" & (objcount + 1).ToString & ")"
+                    .X = mpx
+                    .Y = mpy
+                    For Each con As ConnectionPoint In .InputConnectors
+                        con.AttachedConnector = Nothing
+                        con.IsAttached = False
+                    Next
+                    For Each con As ConnectionPoint In .OutputConnectors
+                        con.AttachedConnector = Nothing
+                        con.IsAttached = False
+                    Next
+                    If Not .SpecialConnectors Is Nothing Then
+                        For Each con As ConnectionPoint In .SpecialConnectors
+                            con.AttachedConnector = Nothing
+                            con.IsAttached = False
+                        Next
+                    End If
+                    .EnergyConnector.AttachedConnector = Nothing
+                    .EnergyConnector.IsAttached = False
+                End With
+                myDWOBJ.Name = myDWOBJ.GraphicObject.Name
+                Flowsheet.Collections.GraphicObjectCollection.Add(myDWOBJ.GraphicObject.Name, myDWOBJ.GraphicObject)
+                Flowsheet.Collections.FlowsheetObjectCollection.Add(myDWOBJ.Name, myDWOBJ)
+                FlowsheetSurface.DrawingObjects.Add(myDWOBJ.GraphicObject)
             Case ObjectType.Pump
                 Dim myDWOBJ As Pump = CType(newobj, Pump)
                 With myDWOBJ.GraphicObject
@@ -1863,6 +1921,7 @@ Public Class FlowsheetSurface_SkiaSharp
                 myCOMIX.GraphicObject = myNode
                 Flowsheet.Collections.FlowsheetObjectCollection.Add(myNode.Name, myCOMIX)
 
+
             Case ObjectType.NodeOut
 
                 Dim myNodeo As New SplitterGraphic(mpx, mpy, 20, 20)
@@ -1879,6 +1938,43 @@ Public Class FlowsheetSurface_SkiaSharp
                 Flowsheet.Collections.GraphicObjectCollection.Add(gObj.Name, myNodeo)
                 'OBJETO DWSIM
                 Dim myCOSP As UnitOperations.UnitOperations.Splitter = New UnitOperations.UnitOperations.Splitter(myNodeo.Name, "Divisor")
+                myCOSP.GraphicObject = myNodeo
+                Flowsheet.Collections.FlowsheetObjectCollection.Add(myNodeo.Name, myCOSP)
+
+            Case ObjectType.EnergyMixer
+
+                Dim myNode As New EnergyMixerGraphic(mpx, mpy, 20, 20)
+                myNode.LineWidth = 2
+                myNode.Fill = True
+                myNode.FillColor = fillclr
+                myNode.LineColor = lineclr
+                myNode.Tag = objname
+                If tag <> "" Then myNode.Tag = tag
+                gObj = myNode
+                CheckTag(gObj)
+                gObj.Name = "EMIST-" & Guid.NewGuid.ToString
+                If id <> "" Then gObj.Name = id
+                Flowsheet.Collections.GraphicObjectCollection.Add(gObj.Name, myNode)
+                Dim myCOMIX As UnitOperations.UnitOperations.EnergyMixer = New UnitOperations.UnitOperations.EnergyMixer(myNode.Name, "Energy Mixer")
+                myCOMIX.GraphicObject = myNode
+                Flowsheet.Collections.FlowsheetObjectCollection.Add(myNode.Name, myCOMIX)
+
+            Case ObjectType.EnergySplitter
+
+                Dim myNodeo As New EnergySplitterGraphic(mpx, mpy, 20, 20)
+                myNodeo.LineWidth = 2
+                myNodeo.Fill = True
+                myNodeo.FillColor = fillclr
+                myNodeo.LineColor = lineclr
+                myNodeo.Tag = objname
+                If tag <> "" Then myNodeo.Tag = tag
+                gObj = myNodeo
+                CheckTag(gObj)
+                gObj.Name = "EDIV-" & Guid.NewGuid.ToString
+                If id <> "" Then gObj.Name = id
+                Flowsheet.Collections.GraphicObjectCollection.Add(gObj.Name, myNodeo)
+                'OBJETO DWSIM
+                Dim myCOSP As UnitOperations.UnitOperations.EnergySplitter = New UnitOperations.UnitOperations.EnergySplitter(myNodeo.Name, "Energy Splitter")
                 myCOSP.GraphicObject = myNodeo
                 Flowsheet.Collections.FlowsheetObjectCollection.Add(myNodeo.Name, myCOSP)
 
@@ -2497,6 +2593,10 @@ Public Class FlowsheetSurface_SkiaSharp
                 tobj = ObjectType.NodeIn
             Case "Splitter"
                 tobj = ObjectType.NodeOut
+            Case "EnergyMixer"
+                tobj = ObjectType.EnergyMixer
+            Case "EnergySplitter"
+                tobj = ObjectType.EnergySplitter
             Case "Pump"
                 tobj = ObjectType.Pump
             Case "Tank"

@@ -192,6 +192,7 @@
     <Compile Include="GraphicObjects\Shapes\CSTR.vb" />
     <Compile Include="GraphicObjects\Shapes\DummyGraphic.vb" />
     <Compile Include="GraphicObjects\Shapes\ExternalUnitOperationGraphic.vb" />
+    <Compile Include="GraphicObjects\Shapes\EnergyMixer.vb" />
     <Compile Include="GraphicObjects\Shapes\Script.vb" />
     <Compile Include="GraphicObjects\Shapes\EnergyRecycle.vb" />
     <Compile Include="GraphicObjects\Shapes\EnergyStream.vb" />
@@ -215,6 +216,7 @@
     <Compile Include="GraphicObjects\Shapes\ShortcutColumn.vb" />
     <Compile Include="GraphicObjects\Shapes\SolidsSeparator.vb" />
     <Compile Include="GraphicObjects\Shapes\Spec.vb" />
+    <Compile Include="GraphicObjects\Shapes\EnergySplitter.vb" />
     <Compile Include="GraphicObjects\Shapes\Splitter.vb" />
     <Compile Include="GraphicObjects\Shapes\Spreadsheet.vb" />
     <Compile Include="GraphicObjects\Shapes\Tank.vb" />
