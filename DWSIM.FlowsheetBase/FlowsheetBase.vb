@@ -594,6 +594,10 @@ Imports DWSIM.Thermodynamics.AdvancedEOS
 
                 Return Me.SimulationObjects(AddObjectToSurface(ObjectType.Switch, x, y, tag))
 
+            Case "Energy Switch"
+
+                Return Me.SimulationObjects(AddObjectToSurface(ObjectType.EnergySwitch, x, y, tag))
+
             Case Else
 
                 Return Nothing

@@ -273,7 +273,7 @@
     <value>Calculation Parameters</value>
   </data>
   <data name="btnCreateAndConnectOutlet3.Location" type="System.Drawing.Point, System.Drawing">
-    <value>329, 103</value>
+    <value>352, 103</value>
   </data>
   <data name="btnCreateAndConnectOutlet3.ToolTip1" xml:space="preserve">
     <value />
@@ -282,7 +282,7 @@
     <value />
   </data>
   <data name="btnCreateAndConnectOutlet2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>329, 76</value>
+    <value>352, 76</value>
   </data>
   <data name="btnCreateAndConnectOutlet2.ToolTip1" xml:space="preserve">
     <value />
@@ -291,7 +291,7 @@
     <value />
   </data>
   <data name="btnCreateAndConnectOutlet1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>329, 49</value>
+    <value>352, 49</value>
   </data>
   <data name="btnCreateAndConnectOutlet1.ToolTip1" xml:space="preserve">
     <value />
@@ -300,7 +300,7 @@
     <value />
   </data>
   <data name="btnCreateAndConnectInlet1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>329, 23</value>
+    <value>352, 23</value>
   </data>
   <data name="btnCreateAndConnectInlet1.ToolTip1" xml:space="preserve">
     <value />
@@ -309,7 +309,7 @@
     <value />
   </data>
   <data name="btnDisconnectOutlet3.Location" type="System.Drawing.Point, System.Drawing">
-    <value>356, 103</value>
+    <value>379, 103</value>
   </data>
   <data name="btnDisconnectOutlet3.ToolTip" xml:space="preserve">
     <value>Disconnect</value>
@@ -330,10 +330,10 @@
     <value>130, 104</value>
   </data>
   <data name="cbOutlet3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>193, 21</value>
+    <value>216, 21</value>
   </data>
   <data name="btnDisconnectOutlet2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>356, 76</value>
+    <value>379, 76</value>
   </data>
   <data name="btnDisconnectOutlet2.ToolTip" xml:space="preserve">
     <value>Disconnect</value>
@@ -354,10 +354,10 @@
     <value>130, 77</value>
   </data>
   <data name="cbOutlet2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>193, 21</value>
+    <value>216, 21</value>
   </data>
   <data name="btnDisconnectOutlet1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>356, 49</value>
+    <value>379, 49</value>
   </data>
   <data name="btnDisconnectOutlet1.ToolTip" xml:space="preserve">
     <value>Disconnect</value>
@@ -369,7 +369,7 @@
     <value />
   </data>
   <data name="btnDisconnect1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>356, 23</value>
+    <value>379, 23</value>
   </data>
   <data name="btnDisconnect1.ToolTip" xml:space="preserve">
     <value>Disconnect</value>
@@ -390,13 +390,13 @@
     <value>130, 50</value>
   </data>
   <data name="cbOutlet1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>193, 21</value>
+    <value>216, 21</value>
   </data>
   <data name="cbInlet1.Location" type="System.Drawing.Point, System.Drawing">
     <value>130, 23</value>
   </data>
   <data name="cbInlet1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>193, 21</value>
+    <value>216, 21</value>
   </data>
   <data name="Label19.Size" type="System.Drawing.Size, System.Drawing">
     <value>63, 13</value>
@@ -417,6 +417,6 @@
     <value>417, 1061</value>
   </data>
   <data name="$this.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>2293267, 60720, 2293267, 60720</value>
+    <value>587076352, 3311217, 587076352, 3311217</value>
   </data>
 </root>

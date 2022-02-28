@@ -187,6 +187,9 @@ namespace DWSIM.UI.Desktop.Editors
                     case "Flowsheet":
                         tobj = ObjectType.FlowsheetUO;
                         break;
+                    case "EnergySwitch":
+                        tobj = ObjectType.EnergySwitch;
+                        break;
                 }
 
                 Flowsheet.AddObject(tobj, 50, 50, "");

@@ -630,6 +630,7 @@ Namespace Enums.GraphicObjects
         Controller_PID
 
         Switch
+        EnergySwitch
 
         Input
 

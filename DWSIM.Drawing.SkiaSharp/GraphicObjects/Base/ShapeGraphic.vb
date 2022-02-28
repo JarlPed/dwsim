@@ -72,6 +72,15 @@ Namespace GraphicObjects
 
         End Sub
 
+        Public Enum DrawState
+            TRUE_STATE
+            FALSE_STATE
+            ' Please expand this for any drawing state changes to canvas.. may give the drawing more responsiveness to the end user..
+        End Enum
+        Public Overridable Property DrawingState As Integer
+
+
+
         Public Sub DrawCalculatingMode(ByVal canvas As SKCanvas)
 
             If CalculatingImage Is Nothing Then

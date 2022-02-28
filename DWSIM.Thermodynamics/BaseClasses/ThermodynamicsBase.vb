@@ -258,7 +258,7 @@ Namespace BaseClasses
 
 #Region "    DWSIM Specific"
 
-        Public Function EvaluateK(ByVal T As Double, ByVal pp As PropertyPackages.PropertyPackage, ByVal Optional componentMolarities As Dictionary(Of String, Double) = Nothing) As Double
+        Public Function EvaluateK(ByVal T As Double, ByVal pp As PropertyPackages.PropertyPackage, ByVal Optional componentMolarities As Dictionary(Of String, Double) = Nothing, ByVal Optional P As Double = 101325) As Double
 
             'equilibrium constant calculation
             Dim kEq As Double
@@ -276,29 +276,29 @@ Namespace BaseClasses
 
                         If MEngine Is Nothing Then
                             MEngine = New Mages.Core.Engine()
-                            KFunc = MEngine.Interpret("( T, " + Join(componentMolarities.Keys().ToArray(), ",") + ") => " + Expression)
+                            KFunc = MEngine.Interpret("( T, P," + Join(componentMolarities.Keys().ToArray(), ",") + ") => " + Expression)
                         End If
                         If _ExpressionChanged Then
                             _ExpressionChanged = False
-                            KFunc = MEngine.Interpret("( T," + Join(componentMolarities.Keys().ToArray(), ",") + ") => " + Expression)
+                            KFunc = MEngine.Interpret("( T, P," + Join(componentMolarities.Keys().ToArray(), ",") + ") => " + Expression)
                         End If
-                        kEq = KFunc.Call(Of Double)(T, componentMolarities.Values())
+                        kEq = KFunc.Call(Of Double)(T, P, componentMolarities.Values())
                         If (Double.IsNaN(kEq) Or kEq = Convert.ToDouble(0) Or Double.IsInfinity(kEq)) Then
-                            'Throw New Exception("Expression returns invalid value: " + kEq.ToString())
+                            Throw New Exception("Expression returns invalid value: " + kEq.ToString())
                         End If
 
                         Return kEq
                     Else
                         If MEngine Is Nothing Then
                             MEngine = New Mages.Core.Engine()
-                            KFunc = MEngine.Interpret("( T ) => " + Expression)
+                            KFunc = MEngine.Interpret("( T, P ) => " + Expression)
                         End If
                         If _ExpressionChanged Then
                             _ExpressionChanged = False
-                            KFunc = MEngine.Interpret("( T ) => " + Expression)
+                            KFunc = MEngine.Interpret("( T, P ) => " + Expression)
                         End If
 
-                        kEq = KFunc.Call(Of Double)(T)
+                        kEq = KFunc.Call(Of Double)(T, P)
                         If (Double.IsNaN(kEq) Or kEq = Convert.ToDouble(0) Or Double.IsInfinity(kEq)) Then
                             'Throw New Exception("Expression returns invalid value: " + kEq.ToString())
                         End If

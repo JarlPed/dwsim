@@ -219,6 +219,10 @@ Namespace GraphicObjects
             End Set
         End Property
 
+
+
+
+
         Public Overridable Overloads Function HitTest(ByVal pt As SKPoint) As Boolean
             Return pt.X >= X And pt.Y >= Y And pt.X <= X + Width And pt.Y <= Y + Height
         End Function
