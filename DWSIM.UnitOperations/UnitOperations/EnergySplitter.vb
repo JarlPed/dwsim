@@ -30,7 +30,7 @@ Namespace UnitOperations
         Inherits UnitOperations.UnitOpBaseClass
         Public Overrides Property ObjectClass As SimulationObjectClass = SimulationObjectClass.MixersSplitters
 
-        <NonSerialized> <Xml.Serialization.XmlIgnore> Public f As EditingForm_EnergySplitter1
+        <NonSerialized> <Xml.Serialization.XmlIgnore> Public f As EditingForm_EnergySplitter
 
         Public Overrides ReadOnly Property SupportsDynamicMode As Boolean = True
 
@@ -387,13 +387,13 @@ Namespace UnitOperations
         Public Overrides Sub DisplayEditForm()
 
             If f Is Nothing Then
-                f = New EditingForm_EnergySplitter1 With {.SimObject = Me}
+                f = New EditingForm_EnergySplitter With {.SimObject = Me}
                 f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
                 f.Tag = "ObjectEditor"
                 Me.FlowSheet.DisplayForm(f)
             Else
                 If f.IsDisposed Then
-                    f = New EditingForm_EnergySplitter1 With {.SimObject = Me}
+                    f = New EditingForm_EnergySplitter With {.SimObject = Me}
                     f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
                     f.Tag = "ObjectEditor"
                     Me.FlowSheet.DisplayForm(f)

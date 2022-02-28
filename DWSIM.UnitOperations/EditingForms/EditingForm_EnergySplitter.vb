@@ -235,7 +235,6 @@ Public Class EditingForm_EnergySplitter
                 SimObject.OperationMode = UnitOperations.EnergySplitter.OpMode.StreamEnergySpec
         End Select
 
-
     End Sub
 
     Private Sub cb_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cbFlowSpec1.SelectedIndexChanged, cbFlowSpec2.SelectedIndexChanged
@@ -526,7 +525,7 @@ Public Class EditingForm_EnergySplitter
 
         If iidx >= 0 Then
 
-            Dim obj = fs.AddObject(ObjectType.MaterialStream, sgobj.InputConnectors(iidx).Position.X - 50, sgobj.InputConnectors(iidx).Position.Y, "")
+            Dim obj = fs.AddObject(ObjectType.EnergyStream, sgobj.InputConnectors(iidx).Position.X - 50, sgobj.InputConnectors(iidx).Position.Y, "")
 
             If sgobj.InputConnectors(iidx).IsAttached Then fs.DisconnectObjects(sgobj.InputConnectors(iidx).AttachedConnector.AttachedFrom, sgobj)
             fs.ConnectObjects(obj.GraphicObject, sgobj, 0, iidx)
@@ -535,7 +534,7 @@ Public Class EditingForm_EnergySplitter
 
         If oidx >= 0 Then
 
-            Dim obj = fs.AddObject(ObjectType.MaterialStream, sgobj.OutputConnectors(oidx).Position.X + 30, sgobj.OutputConnectors(oidx).Position.Y, "")
+            Dim obj = fs.AddObject(ObjectType.EnergyStream, sgobj.OutputConnectors(oidx).Position.X + 30, sgobj.OutputConnectors(oidx).Position.Y, "")
 
             If sgobj.OutputConnectors(oidx).IsAttached Then fs.DisconnectObjects(sgobj, sgobj.OutputConnectors(oidx).AttachedConnector.AttachedTo)
             fs.ConnectObjects(sgobj, obj.GraphicObject, oidx, 0)
@@ -559,4 +558,5 @@ Public Class EditingForm_EnergySplitter
         End If
 
     End Sub
+
 End Class
