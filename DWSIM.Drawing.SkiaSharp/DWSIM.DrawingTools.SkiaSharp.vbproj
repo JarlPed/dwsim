@@ -191,6 +191,7 @@
     <Compile Include="GraphicObjects\Shapes\Cooler.vb" />
     <Compile Include="GraphicObjects\Shapes\CSTR.vb" />
     <Compile Include="GraphicObjects\Shapes\DummyGraphic.vb" />
+    <Compile Include="GraphicObjects\Shapes\MaterialSwitch.vb" />
     <Compile Include="GraphicObjects\Shapes\EnergySwitch.vb" />
     <Compile Include="GraphicObjects\Shapes\ExternalUnitOperationGraphic.vb" />
     <Compile Include="GraphicObjects\Shapes\EnergyMixer.vb" />

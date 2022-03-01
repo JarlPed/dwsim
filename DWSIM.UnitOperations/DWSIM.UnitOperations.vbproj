@@ -246,6 +246,12 @@
     <Compile Include="EditingForms\EditingForm_EnergyMixer.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="EditingForms\EditingForm_MaterialSwitch.Designer.vb">
+      <DependentUpon>EditingForm_MaterialSwitch.vb</DependentUpon>
+    </Compile>
+    <Compile Include="EditingForms\EditingForm_MaterialSwitch.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="EditingForms\EditingForm_EnergySwitch.Designer.vb">
       <DependentUpon>EditingForm_EnergySwitch.vb</DependentUpon>
     </Compile>
@@ -593,6 +599,7 @@
     <Compile Include="Indicators\DigitalGauge.vb" />
     <Compile Include="Inputs\Input.vb" />
     <Compile Include="Indicators\LevelGauge.vb" />
+    <Compile Include="Switches\MaterialSwitch.vb" />
     <Compile Include="Switches\Switch.vb" />
     <Compile Include="Languages\Strings.de.Designer.vb">
       <DependentUpon>Strings.de.resx</DependentUpon>
@@ -727,6 +734,15 @@
     </EmbeddedResource>
     <EmbeddedResource Include="EditingForms\EditingForm_EnergyMixer.resx">
       <DependentUpon>EditingForm_EnergyMixer.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EditingForms\EditingForm_MaterialSwitch.de.resx">
+      <DependentUpon>EditingForm_MaterialSwitch.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EditingForms\EditingForm_MaterialSwitch.en.resx">
+      <DependentUpon>EditingForm_MaterialSwitch.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EditingForms\EditingForm_MaterialSwitch.resx">
+      <DependentUpon>EditingForm_MaterialSwitch.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="EditingForms\EditingForm_EnergySwitch.de.resx">
       <DependentUpon>EditingForm_EnergySwitch.vb</DependentUpon>

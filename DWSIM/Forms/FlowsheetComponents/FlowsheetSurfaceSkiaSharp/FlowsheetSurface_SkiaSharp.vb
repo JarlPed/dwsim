@@ -1551,6 +1551,35 @@ Public Class FlowsheetSurface_SkiaSharp
                 Flowsheet.Collections.GraphicObjectCollection.Add(myDWOBJ.GraphicObject.Name, myDWOBJ.GraphicObject)
                 Flowsheet.Collections.FlowsheetObjectCollection.Add(myDWOBJ.Name, myDWOBJ)
                 FlowsheetSurface.DrawingObjects.Add(myDWOBJ.GraphicObject)
+            Case ObjectType.MaterialSwitch
+                Dim myDWOBJ As UnitOperations.UnitOperations.MaterialSwitch = CType(newobj, UnitOperations.UnitOperations.MaterialSwitch)
+                With myDWOBJ.GraphicObject
+                    .Calculated = False
+                    .Name = "MASW-" & Guid.NewGuid.ToString
+                    .Tag = searchtext & " (" & (objcount + 1).ToString & ")"
+                    .X = mpx
+                    .Y = mpy
+                    For Each con As ConnectionPoint In .InputConnectors
+                        con.AttachedConnector = Nothing
+                        con.IsAttached = False
+                    Next
+                    For Each con As ConnectionPoint In .OutputConnectors
+                        con.AttachedConnector = Nothing
+                        con.IsAttached = False
+                    Next
+                    If Not .SpecialConnectors Is Nothing Then
+                        For Each con As ConnectionPoint In .SpecialConnectors
+                            con.AttachedConnector = Nothing
+                            con.IsAttached = False
+                        Next
+                    End If
+                    .EnergyConnector.AttachedConnector = Nothing
+                    .EnergyConnector.IsAttached = False
+                End With
+                myDWOBJ.Name = myDWOBJ.GraphicObject.Name
+                Flowsheet.Collections.GraphicObjectCollection.Add(myDWOBJ.GraphicObject.Name, myDWOBJ.GraphicObject)
+                Flowsheet.Collections.FlowsheetObjectCollection.Add(myDWOBJ.Name, myDWOBJ)
+                FlowsheetSurface.DrawingObjects.Add(myDWOBJ.GraphicObject)
             Case ObjectType.CapeOpenUO, ObjectType.FlowsheetUO
                 MessageBox.Show("Cloning is not supported by CAPE-OPEN/Flowsheet Unit Operations.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
         End Select
@@ -2496,6 +2525,25 @@ Public Class FlowsheetSurface_SkiaSharp
                 myCOSP.GraphicObject = myNodeo
                 Flowsheet.Collections.FlowsheetObjectCollection.Add(myNodeo.Name, myCOSP)
 
+            Case ObjectType.MaterialSwitch
+
+                Dim myNodeo As New MaterialSwitchGraphic(mpx, mpy, 20, 20)
+                myNodeo.LineWidth = 2
+                myNodeo.Fill = True
+                myNodeo.FillColor = fillclr
+                myNodeo.LineColor = lineclr
+                myNodeo.Tag = objname
+                If tag <> "" Then myNodeo.Tag = tag
+                gObj = myNodeo
+                CheckTag(gObj)
+                gObj.Name = "MASW-" & Guid.NewGuid.ToString
+                If id <> "" Then gObj.Name = id
+                Flowsheet.Collections.GraphicObjectCollection.Add(gObj.Name, myNodeo)
+                'OBJETO DWSIM
+                Dim myCOSP As UnitOperations.UnitOperations.MaterialSwitch = New UnitOperations.UnitOperations.MaterialSwitch(myNodeo.Name, "Material Switch")
+                myCOSP.GraphicObject = myNodeo
+                Flowsheet.Collections.FlowsheetObjectCollection.Add(myNodeo.Name, myCOSP)
+
             Case ObjectType.CustomUO
 
                 Dim myCUO As New ScriptGraphic(mpx, mpy, 25, 25)
@@ -2719,6 +2767,9 @@ Public Class FlowsheetSurface_SkiaSharp
                 tobj = ObjectType.Switch
             Case "EnergySwitch"
                 tobj = ObjectType.EnergySwitch
+            Case "MaterialSwitch"
+                tobj = ObjectType.MaterialSwitch
+
         End Select
 
         AddObjectToSurface(tobj, x, y, chemsep)

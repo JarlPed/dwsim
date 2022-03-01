@@ -384,6 +384,12 @@
 	<data name="ENSW_Name" xml:space="preserve">
     <value>Energy Switch</value>
   </data>
+	<data name="MASW_Desc" xml:space="preserve">
+    <value>Forwards the inlet material stream to an output given an boolean expression</value>
+  </data>
+	<data name="MASW_Name" xml:space="preserve">
+    <value>Mateial Switch</value>
+  </data>
   <data name="TANK_Desc" xml:space="preserve">
     <value>Simple Tank model</value>
   </data>

@@ -631,6 +631,7 @@ Namespace Enums.GraphicObjects
 
         Switch
         EnergySwitch
+        MaterialSwitch
 
         Input
 
