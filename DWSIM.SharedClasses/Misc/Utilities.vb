@@ -548,7 +548,7 @@ Public Class Utility
 
         Dim ppacks As New List(Of IPropertyPackage)
 
-        Dim thermoceos As String = Path.GetDirectoryName(Assembly.GetExecutingAssembly.Location) + Path.DirectorySeparatorChar + "DWSIM.Thermodynamics.ThermoC.dll"
+        Dim thermoceos As String = Path.GetDirectoryName(Assembly.GetAssembly(New SystemsOfUnits.SI().GetType()).Location) + Path.DirectorySeparatorChar + "DWSIM.Thermodynamics.ThermoC.dll"
         If File.Exists(thermoceos) Then
             Dim tca = Assembly.LoadFile(thermoceos)
             Dim pplist As List(Of Interfaces.IPropertyPackage) = GetPropertyPackages(tca)
@@ -557,7 +557,7 @@ Public Class Utility
             Next
         End If
 
-        Dim ppath As String = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly.Location), "ppacks")
+        Dim ppath As String = Path.Combine(Path.GetDirectoryName(Assembly.GetAssembly(New SystemsOfUnits.SI().GetType()).Location), "ppacks")
         If Directory.Exists(ppath) Then
             Try
                 Dim otherpps As String() = Directory.GetFiles(ppath, "*.dll", SearchOption.TopDirectoryOnly)
@@ -572,20 +572,31 @@ Public Class Utility
             End Try
         End If
 
-        ppath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly.Location), "extenders")
-        If Directory.Exists(ppath) Then
-            Try
-                Dim otherpps As String() = Directory.GetFiles(ppath, "*.dll", SearchOption.TopDirectoryOnly)
-                For Each fpath In otherpps
-                    Dim pplist As List(Of Interfaces.IPropertyPackage) = GetPropertyPackages(Assembly.LoadFile(fpath))
-                    For Each pp In pplist
-                        ppacks.Add(pp)
+        Dim directories = New List(Of String)
+
+        Dim d1 = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "extenders")
+        Dim d2 = Path.Combine(Directory.GetParent(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)).FullName, "extenders")
+        Dim d3 = Path.Combine(Directory.GetCurrentDirectory(), "extenders")
+
+        directories.Add(d1)
+        If Not directories.Contains(d2) Then directories.Add(d2)
+        If Not directories.Contains(d3) Then directories.Add(d3)
+
+        For Each ppath In directories
+            If Directory.Exists(ppath) Then
+                Try
+                    Dim otherpps As String() = Directory.GetFiles(ppath, "*.dll", SearchOption.TopDirectoryOnly)
+                    For Each fpath In otherpps
+                        Dim pplist As List(Of Interfaces.IPropertyPackage) = GetPropertyPackages(Assembly.LoadFile(fpath))
+                        For Each pp In pplist
+                            ppacks.Add(pp)
+                        Next
                     Next
-                Next
-            Catch ex As Exception
-                Logging.Logger.LogError("Loading Additional Property Packages (Extenders)", ex)
-            End Try
-        End If
+                Catch ex As Exception
+                    Logging.Logger.LogError("Loading Additional Property Packages (Extenders)", ex)
+                End Try
+            End If
+        Next
 
         Return ppacks
 
