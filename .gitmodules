@@ -4,3 +4,9 @@
 [submodule "DWSIM.Thermodynamics/Assets/Databases/FoodProp"]
 	path = DWSIM.Thermodynamics/Assets/Databases/FoodProp
 	url = https://github.com/Spogis/DWSIMFoodProp
+[submodule "DWSIM.ExternalPackages/DWSIM.UnitOperations.OpenFOAM"]
+	path = DWSIM.ExternalPackages/DWSIM.UnitOperations.OpenFOAM
+	url = https://github.com/JarlPed/DWSIM.UnitOperations.OpenFOAM
+[submodule "DWSIM.ExternalPackages/DWSIM.UnitOperations.NeuralNetwork"]
+	path = DWSIM.ExternalPackages/DWSIM.UnitOperations.NeuralNetwork
+	url = https://github.com/JarlPed/DWSIM.UnitOperations.NeuralNetwork
