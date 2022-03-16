@@ -33,6 +33,7 @@ Imports DWSIM.Thermodynamics.PropertyPackages.Auxiliary
 Imports DWSIM.DWSIM.Editors.PropertyPackages
 Imports System.Threading.Tasks
 Imports DWSIM.Simulate365.Models
+Imports DWSIM.Simulate365.Services
 
 <ComSourceInterfaces(GetType(Interfaces.IFlowsheetNewMessageSentEvent)), ClassInterface(ClassInterfaceType.AutoDual)>
 <System.Serializable()>
@@ -664,13 +665,13 @@ Public Class FormFlowsheet
             My.Application.MainWindowForm.SaveToSimulate365DashboardToolStripMenuItem.Enabled = True
             My.Application.MainWindowForm.ToolStripButton1.Enabled = True
 
-        End If
+            End If
 
-        'garbage collection (frees unused memory)
-        System.GC.Collect()
-        System.GC.WaitForPendingFinalizers()
-        System.GC.Collect()
-        System.GC.WaitForPendingFinalizers()
+            'garbage collection (frees unused memory)
+            System.GC.Collect()
+            System.GC.WaitForPendingFinalizers()
+            System.GC.Collect()
+            System.GC.WaitForPendingFinalizers()
 
     End Sub
 
@@ -714,7 +715,7 @@ Public Class FormFlowsheet
 
     Sub UpdateFormText()
         If (Me.simulate365File IsNot Nothing) Then
-            Me.Text = Me.simulate365File.Filename & " (" & Me.simulate365File.SimulatePath & ")"
+            Me.Text = Me.simulate365File.Filename & " (" & Me.simulate365File.FullPath & ")"
         ElseIf File.Exists(Me.Options.FilePath) Then
             Me.Text = IO.Path.GetFileNameWithoutExtension(Me.Options.FilePath) & " (" & Me.Options.FilePath & ")"
         Else
@@ -1117,7 +1118,7 @@ Public Class FormFlowsheet
     End Sub
 
     Private Sub Button2_Click(sender As Object, e As EventArgs)
-        Process.Start("http://dwsim.inforside.com.br/wiki/index.php?title=Mobile_Compatibility_Mode")
+        Process.Start("https://dwsim.org/wiki/index.php?title=Mobile_Compatibility_Mode")
     End Sub
 
     Private Sub UtilitiesTSMI_Click(sender As Object, e As EventArgs) Handles UtilitiesTSMI.DropDownOpening
