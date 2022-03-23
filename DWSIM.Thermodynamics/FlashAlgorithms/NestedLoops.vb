@@ -282,7 +282,10 @@ Namespace PropertyPackages.Auxiliary.FlashAlgorithms
             r1 = ConvergeVF(IObj, V, Vz, Vx0, Vy0, Ki0, P, T, PP, 0)
 
             If r1(6) = True And Math.Abs(Vmax - Vmin) > 0.01 Then
-                r1 = ConvergeVF(IObj, (Vmin + Vmax) / 2, Vz, Vx0, Vy0, Ki0, P, T, PP, 1)
+                r1 = ConvergeVF(IObj, (Vmin + Vmax) / 2, Vz, Vx0, Vy0, Ki0, P, T, PP, 1.0)
+            End If
+            If r1(6) = True And Math.Abs(Vmax - Vmin) > 0.01 Then
+                r1 = ConvergeVF(IObj, (Vmin + Vmax) / 2, Vz, r1(1), r1(2), r1(3), P, T, PP, 1.0)
             End If
 
             V = r1(0)
@@ -744,13 +747,13 @@ out:        WriteDebugInfo("PT Flash [NL]: Converged in " & ecount & " iteration
 
                     x0 = x1
 
-                    If cnt > 30 And Math.Sign(fx) <> Math.Sign(fx_ant) And Math.Abs(fx - fx_ant) < 5.0 Then
+                    If cnt > 30 And Math.Sign(fx) <> Math.Sign(fx_ant) Then
 
                         'oscillating around the solution.
 
                         Dim bmin As New Brent
 
-                        Dim interp As New MathNet.Numerics.Interpolation.BulirschStoerRationalInterpolation(xvals.ToArray(), fxvals.ToArray())
+                        Dim interp = MathNet.Numerics.Interpolate.Linear(xvals.ToArray(), fxvals.ToArray())
 
                         x1 = bmin.BrentOpt2(xvals.Min, xvals.Max, 500, 0.01, 100,
                                             Function(tval)
