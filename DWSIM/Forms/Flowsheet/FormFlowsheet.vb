@@ -129,7 +129,7 @@ Public Class FormFlowsheet
 
     Friend _translatefunction As Func(Of String, String)
 
-    Public Property SupressMessages As Boolean = False
+    Public Property SupressMessages As Boolean = False Implements Interfaces.IFlowsheet.SupressMessages
 
     Private MessagePumpTimer As Timer
 
@@ -142,6 +142,10 @@ Public Class FormFlowsheet
 #Region "    Form Event Handlers "
 
     Public Event ToolOpened(sender As Object, e As EventArgs)
+
+    Public Event StartedSolving(sender As Object, e As EventArgs)
+
+    Public Event FinishedSolving(sender As Object, e As EventArgs)
 
     Public Sub New()
 
@@ -1096,6 +1100,7 @@ Public Class FormFlowsheet
             My.Application.ActiveSimulation = Me
             If My.Computer.Keyboard.ShiftKeyDown Then GlobalSettings.Settings.CalculatorBusy = False
             Dim t As New Task(Of List(Of Exception))(Function()
+                                                         RaiseEvent StartedSolving(Me, New EventArgs())
                                                          Return FlowsheetSolver.FlowsheetSolver.SolveFlowsheet(Me, My.Settings.SolverMode, Settings.TaskCancellationTokenSource, False, False, Nothing, Nothing,
                                                         Sub()
                                                             If My.Settings.ObjectEditor = 1 Then
@@ -1107,6 +1112,7 @@ Public Class FormFlowsheet
                                                         End Sub, My.Computer.Keyboard.CtrlKeyDown And My.Computer.Keyboard.AltKeyDown)
                                                      End Function)
             t.ContinueWith(Sub(tres)
+                               RaiseEvent FinishedSolving(Me, New EventArgs())
                                For Each item In tres.Result
                                    ShowMessage(item.Message, IFlowsheet.MessageType.GeneralError)
                                Next
@@ -3025,7 +3031,7 @@ Public Class FormFlowsheet
             ElseIf cnt.ShowHint = DockState.DockRight Or cnt.ShowHint = DockState.DockRightAutoHide Then
                 dckPanel.DockRightPortion = 450 * Settings.DpiScale
             ElseIf cnt.ShowHint = DockState.DockTop Or cnt.ShowHint = DockState.DockTopAutoHide Then
-                dckPanel.DockTopPortion = 160 * Settings.DpiScale
+                dckPanel.DockTopPortion = 86 * Settings.DpiScale
             ElseIf cnt.ShowHint = DockState.Float Then
                 dckPanel.DefaultFloatWindowSize = New Size(500 * Settings.DpiScale, 500 * Settings.DpiScale)
             End If
@@ -3655,6 +3661,12 @@ Public Class FormFlowsheet
 
         Options.FilePath = filepath
         FormMain.SaveFile(True)
+
+    End Sub
+
+    Public Sub ToggleFlowsheetAnimation() Implements IFlowsheet.ToggleFlowsheetAnimation
+
+        FormSurface.AnimationTimer.Enabled = Not FormSurface.AnimationTimer.Enabled
 
     End Sub
 

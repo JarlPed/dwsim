@@ -161,6 +161,12 @@ namespace DWSIM.UI.Forms
             FlowsheetObject = new Desktop.Shared.Flowsheet() { FlowsheetForm = this };
             FlowsheetObject.Initialize();
 
+            FlowsheetObject.DynamicsManager.RunSchedule = (schname) =>
+            {
+                FlowsheetObject.DynamicsManager.CurrentSchedule = FlowsheetObject.DynamicsManager.GetSchedule(schname).ID;
+                return DynamicsIntegratorControl.RunIntegrator(false, false, FlowsheetObject, null);
+            };
+
             Title = "New Flowsheet";
 
             if (s.FlowsheetRenderer == s.SkiaCanvasRenderer.CPU)
@@ -283,7 +289,7 @@ namespace DWSIM.UI.Forms
 
             FileExplControl = new FileExplorerControl(FlowsheetObject);
 
-            // if automation then stop loadning UI controls
+            // if automation then stop loading UI controls
 
             if (GlobalSettings.Settings.AutomationMode) return;
 
@@ -1143,6 +1149,8 @@ namespace DWSIM.UI.Forms
             var lblSetFontSize = new Label { Text = "Object Labels Font Size" };
             var tbFontSize = new TextBox { Width = 40, Text = FlowsheetObject.Options.LabelFontSize.ToString("G2") };
             var btnSetFont = new Button { Width = 40, Text = "Set" };
+
+            if (Application.Instance.Platform.IsGtk) btnSetFont.Size = new Size(40, 30);
 
             btnSetFont.Click += (s, e) =>
             {
@@ -2289,7 +2297,7 @@ namespace DWSIM.UI.Forms
             item9.Click += (sender, e) => ExportToPDF();
             item10.Click += (sender, e) => ExportToSVG();
 
-            deselctxmenu.Items.AddRange(new MenuItem[] { item0, new SeparatorMenuItem(), item1, item2, new SeparatorMenuItem(), item4, item5, item6, new SeparatorMenuItem(), item9, item10 , new SeparatorMenuItem(), item7, item8 });
+            deselctxmenu.Items.AddRange(new MenuItem[] { item0, new SeparatorMenuItem(), item1, item2, new SeparatorMenuItem(), item4, item5, item6, new SeparatorMenuItem(), item9, item10, new SeparatorMenuItem(), item7, item8 });
 
             return;
 
