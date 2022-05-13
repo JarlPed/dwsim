@@ -1921,7 +1921,11 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddDescriptionRow(container,
                                                  SimObject.GetPropertyDescription("Outlet Temperature"));
                     s.CreateAndAddLabelRow(container, "Sizing Information");
-                    s.CreateAndAddTextBoxRow(container, nf, "Reactor Volume (" + su.volume + ")", cv.ConvertFromSI(su.volume, reactor4.Volume),
+                    s.CreateAndAddNumericEditorRow(container, "Number of Tubes", reactor4.NumberOfTubes, 1, 10000, 0, (ns, e) =>
+                    {
+                        reactor4.NumberOfTubes = (int)ns.Value;
+                    });
+                    s.CreateAndAddTextBoxRow(container, nf, "Reactive Volume (" + su.volume + ")", cv.ConvertFromSI(su.volume, reactor4.Volume),
                                (TextBox arg3, EventArgs ev) =>
                                {
                                    if (arg3.Text.IsValidDoubleExpression())
@@ -1939,7 +1943,7 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddDropDownRow(container, "Sizing Information", new List<string> { "Length", "Diameter" },
                         reactor4.ReactorSizingType == Reactor_PFR.SizingType.Length ? 0 : 1,
                          (dd, e) => reactor4.ReactorSizingType = dd.SelectedIndex.ToEnum<Reactor_PFR.SizingType>());
-                    s.CreateAndAddTextBoxRow(container, nf, "Reactor Length (" + su.distance + ")", cv.ConvertFromSI(su.distance, reactor4.Length),
+                    s.CreateAndAddTextBoxRow(container, nf, "Tube Length (" + su.distance + ")", cv.ConvertFromSI(su.distance, reactor4.Length),
                                (TextBox arg3, EventArgs ev) =>
                                {
                                    if (arg3.Text.IsValidDoubleExpression())
@@ -1952,7 +1956,7 @@ namespace DWSIM.UI.Desktop.Editors
                                        arg3.TextColor = (Colors.Red);
                                    }
                                }, () => CallSolverIfNeeded());
-                    s.CreateAndAddTextBoxRow(container, nf, "Reactor Diameter (" + su.diameter + ")", cv.ConvertFromSI(su.diameter, reactor4.Diameter),
+                    s.CreateAndAddTextBoxRow(container, nf, "Tube Diameter (" + su.diameter + ")", cv.ConvertFromSI(su.diameter, reactor4.Diameter),
                                (TextBox arg3, EventArgs ev) =>
                                {
                                    if (arg3.Text.IsValidDoubleExpression())
