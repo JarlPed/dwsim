@@ -9,7 +9,6 @@ Andrew Dickson
 Bruce Rising
 Bruce Logue
 Carlos G. C. Reetz
-Casca Grossa Suprema
 Casey Houston
 Christian Hornhofer
 Christian Jordan
@@ -45,6 +44,7 @@ John Kossik
 Jonathan
 Joseph Mendoza
 Joseph Attia
+Kiran Pashikanti
 Karen Elrington
 Laércio Antonio Piva
 Lauterbach Verfahrenstechnik GmbH
@@ -61,7 +61,9 @@ Martin Skjøth-Rasmussen
 Masahiro Sakai
 Matt Hogg
 Michael Papantoniou
+Nicolas Spogis
 Nikita Petrosyan
+Odnei Macalossi
 Pedro Sabóia
 Petroconsulting LLC
 Philippe Wesel
