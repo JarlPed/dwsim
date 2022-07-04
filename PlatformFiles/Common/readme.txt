@@ -1,6 +1,6 @@
 ﻿==================================================
 DWSIM - Open Source Process Simulator
-Version 7.5.5
+Version 8.0.3
 Copyright (c) 2017-2022 Daniel Medeiros and contributors
 Copyright (c) 2008-2016 Daniel Medeiros, Gregor Reichert, Gustavo Leon
 ==================================================
@@ -61,6 +61,52 @@ VERSION HISTORY / CHANGELOG
 ==================================================
 
 The full changelog including souce code changes can be viewed at https://github.com/DanWBR/dwsim/commits/windows
+
+Version 8.0.3
+
+- Fixed an issue with FOSSEE flowsheets loading
+- Fixed an issue with PV Flash (#333)
+- Fixed an issue with compound search on Classic UI (#328)
+- Fixed an issue with Master Property Table (#337)
+- Fixed an issue with single-compound flash and forced solids
+
+Version 8.0.2
+
+- Added Weather Conditions panel to Cross-Platform UI
+- Fixed an issue with PFR
+- Fixed an issue with single-compound flash and forced solids
+- Disable/Enable automatic update checks
+
+Version 8.0.1/8.0.0
+
+- New Unit Operations:  PEM Fuel Cell, Water Electrolyzer, Wind Turbine, Hydroelectric Turbine,
+  Solar Panel, Gibbs Reactor (Reaktoro), Air Cooler, Energy Stream Mixer
+- New "Don't Calculate" Phase Equilibria Option
+- Import Compounds from thermo/chemicals python packages
+- New Quick Create Solid Compound tool
+- New Flowsheet Weather component can provide ambient temperature, pressure, wind speed, 
+  humidity and solar insulation data for Unit Operations
+- Allow user to override flowsheet icons for Component/Compound and Solids Separator
+- Pipe Segment UO can now use Flowsheet-provided weather information
+- Bug fixes
+
+Version 7.5.7
+
+- Fixed a bug in PFR
+- Fixed a bug in Rigorous Column
+- Fixed an issue with LLE Diagram
+
+Version 7.5.6
+
+- Implemented #274: Number of Tubes in Tubular Reactors for Correct Pressure Drop Calculation
+- Alternate calculation method for Gibbs Reactor
+- Fixed #318: Error opening old file in 7.5.5
+- Fixed #319: Error loading Compound Creator study
+- Fixed #322: Suspicious branch in Valve.vb
+- Throw errors (if any) when loading simulations in automation mode
+- Fixed issue with Rigorous Column editor
+- Fixed ideal gas Cp estimation
+- Python Automation fixes
 
 Version 7.5.5
 

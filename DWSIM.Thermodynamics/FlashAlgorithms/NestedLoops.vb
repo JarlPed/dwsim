@@ -281,10 +281,17 @@ Namespace PropertyPackages.Auxiliary.FlashAlgorithms
 
             r1 = ConvergeVF(IObj, V, Vz, Vx0, Vy0, Ki0, P, T, PP, 0)
 
+            Dim failed = False
+
             If r1(6) = True And Math.Abs(Vmax - Vmin) > 0.01 Then
-                r1 = ConvergeVF(IObj, (Vmin + Vmax) / 2, Vz, Vx0, Vy0, Ki0, P, T, PP, 1.0)
+                Try
+                    r1 = ConvergeVF(IObj, (Vmin + Vmax) / 2, Vz, Vx0, Vy0, Ki0, P, T, PP, 1.0)
+                Catch ex As Exception
+                    failed = True
+                End Try
             End If
-            If r1(6) = True And Math.Abs(Vmax - Vmin) > 0.01 Then
+
+            If r1(6) = True And Math.Abs(Vmax - Vmin) > 0.01 Or failed Then
                 r1 = ConvergeVF(IObj, (Vmin + Vmax) / 2, Vz, r1(1), r1(2), r1(3), P, T, PP, 1.0)
             End If
 
@@ -2144,6 +2151,13 @@ out:        WriteDebugInfo("PT Flash [NL]: Converged in " & ecount & " iteration
             Dim result As Object()
 
             result = Flash_PV_1(Vz, P, V, Tref, PP, ReuseKI, PrevKi)
+            'check if converged to the trivial solution.
+            Dim Kvals As Double() = result(6)
+            Dim Tt As Double = result(4)
+            If PP.AUX_CheckTrivial(Kvals, 0.75) Then
+                'try again with a slightly different temperature to get out of trivial region
+                result = Flash_PV_1(Vz, P, V, Tt * 1.2, PP, ReuseKI, PrevKi)
+            End If
             If result.Count = 1 Then
                 result = Flash_PV_1(Vz, P, V, 0.0, PP, False, Nothing)
             End If

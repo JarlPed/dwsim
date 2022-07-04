@@ -56,7 +56,7 @@ Public Class FrmCritpt
             Me.mat = Frm.Collections.FlowsheetObjectCollection(gobj.Name)
             Dim pr As PropertyPackages.PropertyPackage
 
-            pr = Frm.Options.SelectedPropertyPackage
+            pr = mat.PropertyPackage
             pr.CurrentMaterialStream = mat
 
             Dim n As Integer = mat.Phases(0).Compounds.Count - 1
@@ -65,7 +65,7 @@ Public Class FrmCritpt
             Dim comp As BaseClasses.Compound
             Dim i As Integer = 0
             For Each comp In mat.Phases(0).Compounds.Values
-                Vz(i) += comp.MoleFraction.GetValueOrDefault
+                Vz(i) = comp.MoleFraction.GetValueOrDefault
                 i += 1
             Next
 
@@ -77,7 +77,7 @@ Public Class FrmCritpt
             Loop Until i = n + 1
 
             Dim VTc(n), Vpc(n), Vw(n), VVc(n), VKij(n, n) As Double
-            Dim Vm2(UBound(Vz) - j), VPc2(UBound(Vz) - j), VTc2(UBound(Vz) - j), VVc2(UBound(Vz) - j), Vw2(UBound(Vz) - j), VKij2(UBound(Vz) - j, UBound(Vz) - j)
+            Dim Vm2(UBound(Vz) - j), VPc2(UBound(Vz) - j), VTc2(UBound(Vz) - j), VVc2(UBound(Vz) - j), Vw2(UBound(Vz) - j), VKij2(UBound(Vz) - j, UBound(Vz) - j) As Double
 
             VTc = pr.RET_VTC()
             Vpc = pr.RET_VPC()
@@ -110,17 +110,44 @@ Public Class FrmCritpt
 
             'Try
 
-            Dim pc As New ArrayList, tmp As Object
+            Dim pc As ArrayList, tmp As Object
 
-            If Frm.Options.SelectedPropertyPackage.ComponentName.Contains("Peng-Robinson (PR)") Then
+            If mat.PropertyPackage.ComponentName.Contains("Peng-Robinson (PR)") Then
 
                 Me.cp = New Utilities.TCP.Methods
                 pc = Me.cp.CRITPT_PR(Vm2, VTc2, VPc2, VVc2, Vw2, VKij2)
 
-            ElseIf Frm.Options.SelectedPropertyPackage.ComponentName.Contains("SRK") Then
+            ElseIf mat.PropertyPackage.ComponentName.Contains("SRK") Then
 
                 Me.cps = New Utilities.TCP.Methods_SRK
                 pc = Me.cps.CRITPT_PR(Vm2, VTc2, VPc2, VVc2, Vw2, VKij2)
+
+            Else
+
+                'use generic method
+
+                Dim gm As New Utilities.TCP.GenericMethod
+
+                gm.CalcP = Function(T, V, Vzi)
+                               Return pr.DW_CalcP(Vzi, T, V)
+                           End Function
+
+                gm.FugacityTV = Function(T, V, Vzi)
+                                    Return pr.DW_CalcFugCoeff(Vzi, T, V)
+                                End Function
+
+                Dim V0 = 1.5 * 0.08664 * 8.314 * VTc.DivideY(Vpc).MultiplyY(Vz).SumY
+                Dim T0 = (VTc.MinY() + VTc.MaxY()) / 2
+
+                ''Dim Qij1 = cp.QIJ_HES_MAT(230, 0.0000844, Vm2, VTc2, VPc2, VVc2, Vw2, VKij2)
+
+                'Dim Qij2 = gm.Qij(230, 0.0000844, Vz)
+
+                ''Dim s1 = Qij1.ToString()
+                'Dim s2 = Qij2.ToString()
+
+                pc = New ArrayList(gm.CriticalPoint(Vz, V0, T0))
+                Console.WriteLine(pc)
 
             End If
 
@@ -179,23 +206,22 @@ Public Class FrmCritpt
 
         Me.Text = DWSIM.App.GetLocalString("DWSIMUtilitriosPonto")
 
-        If mat.PropertyPackage.ComponentName.Contains("Peng-Robinson (PR)") Or mat.PropertyPackage.ComponentName.Contains("SRK") Then
+        Me.su = Frm.Options.SelectedUnitSystem
+        Me.nf = Frm.Options.NumberFormat
 
-            Me.su = Frm.Options.SelectedUnitSystem
-            Me.nf = Frm.Options.NumberFormat
+        Me.ComboBox3.Items.Clear()
+        Me.ComboBox3.Items.Add(AttachedTo.GraphicObject.Tag.ToString)
+        Me.ComboBox3.SelectedIndex = 0
+        Me.ComboBox3.Enabled = False
 
-            Me.ComboBox3.Items.Clear()
-            Me.ComboBox3.Items.Add(AttachedTo.GraphicObject.Tag.ToString)
-            Me.ComboBox3.SelectedIndex = 0
-            Me.ComboBox3.Enabled = False
+        With Me.Grid1.Columns
+            .Item(2).HeaderText = "Tc (" & su.temperature & ")"
+            .Item(3).HeaderText = "Pc (" & su.pressure & ")"
+            .Item(4).HeaderText = "Vc (" & su.molar_volume & ")"
+        End With
 
-            With Me.Grid1.Columns
-                .Item(2).HeaderText = "Tc (" & su.temperature & ")"
-                .Item(3).HeaderText = "Pc (" & su.pressure & ")"
-                .Item(4).HeaderText = "Vc (" & su.molar_volume & ")"
-            End With
+        ExtensionMethods.FormExtensions.ChangeDefaultFont(Me)
 
-        End If
     End Sub
 
     Public Property AttachedTo As Interfaces.ISimulationObject Implements Interfaces.IAttachedUtility.AttachedTo

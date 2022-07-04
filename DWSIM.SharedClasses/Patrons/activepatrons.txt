@@ -7,7 +7,6 @@ Andras Nady
 Anders Andreasen
 Andrew Dickson
 Bruce Rising
-Bruce Logue
 Carlos G. C. Reetz
 Casey Houston
 Christian Hornhofer
@@ -17,12 +16,11 @@ CollectiveObjective
 Daniel Dornellas Athayde
 David Miller
 David Whitlock
-Deryck Coetzer
-Diego A. Acosta
 Domenico Marchese
 Dorivaldo Junior
 Doug Palfreyman
 Emanuel Cardoso
+Евгений Иванчиков
 Filippo Borroni
 Frank Mittricker
 Gokhan Candan 
@@ -36,6 +34,7 @@ H-Tec Systems GmbH
 Hugo Burbach
 Hurudza 
 Jan Boshoff
+Javier Fontalvo
 Jens Greimeier
 Jeremiah McAfoose
 Joe Rhodes
@@ -62,21 +61,20 @@ Masahiro Sakai
 Matt Hogg
 Michael Papantoniou
 Nicolas Spogis
-Nikita Petrosyan
 Odnei Macalossi
 Pedro Sabóia
 Petroconsulting LLC
-Philippe Wesel
 Protherm Systems
 Rafael Melo-González
 Richard Huntington
 Roland Berger
 Rupert Easter
 Ryszard Sadowski
+Shankar Ananth
 Shijin Roh
 Steven Sandoval
 Tibor Lányi
 Tino Josef Ritter
-Tony Diocee
 Will Flores
+Yosafat Eden
 Yoshihide Watabe

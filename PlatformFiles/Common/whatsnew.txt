@@ -1,11 +1,7 @@
-Version 7.5.5
+Version 8.0.3
 
-- Dynamic models for Conversion, Equilibrium and Gibbs Reactors (beta)
-- New API to run flowsheets in Dynamic Mode
-- New calculation routine for Adiabatic Mode in Gibbs Reactor
-- Added an option to choose the flow coefficient type in valves (Kv or Cv)
-- PFD drawing optimizations
-- Phase equilibria calculation enhancements
-- Fixed issue with file saving
-- Fixed issue with Distillation Column
-- Fixed issues with Inspector Reports
+- Fixed an issue with FOSSEE flowsheets loading
+- Fixed an issue with PV Flash (#333)
+- Fixed an issue with compound search on Classic UI (#328)
+- Fixed an issue with Master Property Table (#337)
+- Fixed an issue with single-compound flash and forced solids
