@@ -1804,9 +1804,9 @@ Public Class GraphicsSurface
         Dim eset = New Microsoft.Msagl.Core.Routing.EdgeRoutingSettings()
         eset.EdgeRoutingMode = Microsoft.Msagl.Core.Routing.EdgeRoutingMode.SplineBundling
         settings.EdgeRoutingSettings = eset
+        settings.Reporting = False
 
         Dim layout = New InitialLayout(graph, settings)
-
         layout.Run()
 
         graph.UpdateBoundingBox()

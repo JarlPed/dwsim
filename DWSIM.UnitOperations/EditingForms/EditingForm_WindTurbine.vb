@@ -65,7 +65,7 @@ Public Class EditingForm_WindTurbine
 
             'connections
 
-            Dim eslist As String() = .FlowSheet.SimulationObjects.Values.Where(Function(x) x.GraphicObject.ObjectType = ObjectType.EnergyStream).Select(Function(m) m.GraphicObject.Tag).ToArray
+            Dim eslist As String() = .FlowSheet.SimulationObjects.Values.Where(Function(x) x.GraphicObject.ObjectType = ObjectType.EnergyStream).Select(Function(m) m.GraphicObject.Tag).OrderBy(Function(m) m).ToArray()
 
             cbEnergy.Items.Clear()
             cbEnergy.Items.AddRange(eslist)
@@ -89,7 +89,7 @@ Public Class EditingForm_WindTurbine
             tbAtmPres.Enabled = .UseUserDefinedWeather
             tbRelHum.Enabled = .UseUserDefinedWeather
 
-            lblAreaUnits.Text = units.area
+            lblDistanceUnits.Text = units.distance
             lblAirDensityUnits.Text = units.density
             lblPowerUnits.Text = units.heatflow
             lblAtmPres.Text = units.pressure
@@ -101,7 +101,7 @@ Public Class EditingForm_WindTurbine
 
             tbPanelEfficiency.Text = .Efficiency.ToString(nf)
 
-            tbDiskArea.Text = .DiskArea.ConvertFromSI(units.area).ToString(nf)
+            tbRotorDiameter.Text = .RotorDiameter.ConvertFromSI(units.distance).ToString(nf)
 
             tbNumberOfPanels.Text = .NumberOfTurbines
 
@@ -224,13 +224,13 @@ Public Class EditingForm_WindTurbine
         End If
     End Sub
 
-    Private Sub tbPanelArea_TextChanged(sender As Object, e As EventArgs) Handles tbDiskArea.TextChanged
+    Private Sub tbPanelArea_TextChanged(sender As Object, e As EventArgs) Handles tbRotorDiameter.TextChanged
         If Loaded Then
             Try
-                SimObject.DiskArea = tbDiskArea.Text.ToDoubleFromCurrent().ConvertToSI(units.area)
-                tbDiskArea.ForeColor = Color.Blue
+                SimObject.RotorDiameter = tbRotorDiameter.Text.ToDoubleFromCurrent().ConvertToSI(units.distance)
+                tbRotorDiameter.ForeColor = Color.Blue
             Catch ex As Exception
-                tbDiskArea.ForeColor = Color.Red
+                tbRotorDiameter.ForeColor = Color.Red
             End Try
         End If
     End Sub

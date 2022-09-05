@@ -10,3 +10,4 @@
 [submodule "DWSIM.ExternalPackages/DWSIM.UnitOperations.NeuralNetwork"]
 	path = DWSIM.ExternalPackages/DWSIM.UnitOperations.NeuralNetwork
 	url = https://github.com/JarlPed/DWSIM.UnitOperations.NeuralNetwork
+

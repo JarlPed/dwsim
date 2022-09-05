@@ -1540,7 +1540,15 @@ namespace DWSIM.UI.Forms
                     var sobj = FlowsheetObject.GetSelectedFlowsheetSimulationObject("");
                     if (sobj != null)
                     {
-                        EditObject_New(sobj);
+                        try
+                        {
+                            EditObject_New(sobj);
+                        }
+                        catch (Exception ex)
+                        {
+                            Logging.Logger.LogError("Object Editor Error", ex);
+                            Console.WriteLine(ex.ToString());
+                        }
                     }
                 }
             };
@@ -2354,6 +2362,7 @@ namespace DWSIM.UI.Forms
 
         void ExportToPDF()
         {
+            var ds = (float)GlobalSettings.Settings.DpiScale;
             var dialog = new SaveFileDialog();
             dialog.Title = "Export Flowsheet to PDF File";
             dialog.Filters.Add(new FileFilter("PDF Files", new[] { ".pdf" }));
@@ -2365,7 +2374,7 @@ namespace DWSIM.UI.Forms
                 {
                     using (var document = SKDocument.CreatePdf(stream))
                     {
-                        var canvas = document.BeginPage(FlowsheetControl.Width, FlowsheetControl.Height);
+                        var canvas = document.BeginPage(FlowsheetControl.Width * ds, FlowsheetControl.Height * ds);
                         FlowsheetControl.FlowsheetSurface.UpdateCanvas(canvas);
                         // end the page and document
                         document.EndPage();
@@ -2378,6 +2387,7 @@ namespace DWSIM.UI.Forms
 
         void ExportToSVG()
         {
+            var ds = (float)GlobalSettings.Settings.DpiScale;
             var dialog = new SaveFileDialog();
             dialog.Title = "Export Flowsheet to SVG File";
             dialog.Filters.Add(new FileFilter("SVG Files", new[] { ".svg" }));
@@ -2388,7 +2398,7 @@ namespace DWSIM.UI.Forms
                 using (var stream = SKFileWStream.OpenStream(dialog.FileName))
                 {
                     var writer = new SKXmlStreamWriter(stream);
-                    using (var canvas = SKSvgCanvas.Create(SKRect.Create(FlowsheetControl.Width, FlowsheetControl.Height), writer))
+                    using (var canvas = SKSvgCanvas.Create(SKRect.Create(FlowsheetControl.Width * ds, FlowsheetControl.Height * ds), writer))
                     {
                         FlowsheetControl.FlowsheetSurface.UpdateCanvas(canvas);
                     }

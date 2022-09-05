@@ -1,7 +1,1 @@
-Version 8.0.3
-
-- Fixed an issue with FOSSEE flowsheets loading
-- Fixed an issue with PV Flash (#333)
-- Fixed an issue with compound search on Classic UI (#328)
-- Fixed an issue with Master Property Table (#337)
-- Fixed an issue with single-compound flash and forced solids
+Version 8.1.1

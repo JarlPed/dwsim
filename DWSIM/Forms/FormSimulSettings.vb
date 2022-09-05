@@ -1050,33 +1050,48 @@ Public Class FormSimulSettings
 
             ogc1.ClearSelection()
 
-            Dim lowered = CompoundList.Select(Function(c) c.ToLower).ToList()
+            Dim needselecting As Boolean = True
 
-            If lowered.Contains(txtSearch.Text.ToLower()) Then
+            For Each r As DataGridViewRow In ogc1.Rows
+                If Not r.Cells(2).Value Is Nothing Then
+                    If r.Cells(2).Value.ToString.ToLower.Contains(txtSearch.Text.ToLower) Or
+                       r.Cells(3).Value.ToString.ToLower.Contains(txtSearch.Text.ToLower) Or
+                       r.Cells(5).Value.ToString.ToLower.Contains(txtSearch.Text.ToLower) Then
+                        r.Visible = True
+                        If r.Cells(2).Value.ToString.ToLower.Equals(txtSearch.Text.ToLower) Or
+                                           r.Cells(3).Value.ToString.ToLower.Equals(txtSearch.Text.ToLower) Or
+                                           r.Cells(5).Value.ToString.ToLower.Equals(txtSearch.Text.ToLower) Then
+                            r.Selected = True
+                        End If
+                    Else
+                        r.Visible = False
+                    End If
+                End If
+            Next
 
-                Dim index = lowered.IndexOf(txtSearch.Text.ToLower())
-                Dim index2 = Indexes(CompoundList(index))
+            If ogc1.Rows.GetFirstRow(DataGridViewElementStates.Visible) >= 0 And needselecting Then
+                ogc1.Rows(ogc1.Rows.GetFirstRow(DataGridViewElementStates.Visible)).Selected = True
+            End If
 
-                ogc1.Rows.Item(index2).Selected = True
-
+            If txtSearch.Text = "" Then
+                For Each r As DataGridViewRow In ogc1.Rows
+                    r.Selected = False
+                    r.Visible = True
+                Next
+                ogc1.FirstDisplayedScrollingRowIndex = 0
+                ogc1.Sort(colAdd, System.ComponentModel.ListSortDirection.Descending)
+            Else
                 If ogc1.SelectedRows.Count > 0 Then
                     ogc1.FirstDisplayedScrollingRowIndex = ogc1.SelectedRows(0).Index
                 End If
-
-            Else
-
-                ogc1.FirstDisplayedScrollingRowIndex = 0
-                ogc1.Sort(colAdd, System.ComponentModel.ListSortDirection.Descending)
-
             End If
 
         Catch ex As Exception
 
-            ogc1.FirstDisplayedScrollingRowIndex = 0
-            ogc1.Sort(colAdd, System.ComponentModel.ListSortDirection.Descending)
+            'ogc1.FirstDisplayedScrollingRowIndex = 0
+            'ogc1.Sort(colAdd, System.ComponentModel.ListSortDirection.Descending)
 
         End Try
-
 
     End Sub
 
@@ -1440,6 +1455,7 @@ Public Class FormSimulSettings
     End Sub
 
     Private Sub Button1_Click_1(sender As Object, e As EventArgs) Handles Button1.Click
+
         FormMain.AnalyticsProvider?.RegisterEvent("Importing Compounds from JSON Files", "", Nothing)
 
 #Region "Load Json from FilePickerService"
@@ -1467,12 +1483,13 @@ Public Class FormSimulSettings
                 Else
                     'compound exists.
                     If MessageBox.Show(DWSIM.App.GetLocalString("UpdateFromJSON"), "DWSIM", MessageBoxButtons.YesNo, MessageBoxIcon.Question) = DialogResult.Yes Then
-                        Me.CurrentFlowsheet.Options.SelectedComponents(comp.Name) = comp
+                        Dim c0 = Me.CurrentFlowsheet.Options.SelectedComponents(comp.Name)
+                        DirectCast(c0, ICustomXMLSerialization).LoadData(DirectCast(comp, ICustomXMLSerialization).SaveData())
                         Dim ms As Streams.MaterialStream
                         Dim proplist As New ArrayList
                         For Each ms In CurrentFlowsheet.Collections.FlowsheetObjectCollection.Values.Where(Function(x) TypeOf x Is Streams.MaterialStream)
                             For Each phase As BaseClasses.Phase In ms.Phases.Values
-                                phase.Compounds(comp.Name).ConstantProperties = comp
+                                phase.Compounds(comp.Name).ConstantProperties = c0
                             Next
                         Next
                         MessageBox.Show(DWSIM.App.GetLocalString("CompoundUpdated"), "DWSIM", MessageBoxButtons.OK, MessageBoxIcon.Information)

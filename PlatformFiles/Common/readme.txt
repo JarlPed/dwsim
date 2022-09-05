@@ -1,6 +1,6 @@
 ﻿==================================================
 DWSIM - Open Source Process Simulator
-Version 8.0.3
+Version 8.1.1
 Copyright (c) 2017-2022 Daniel Medeiros and contributors
 Copyright (c) 2008-2016 Daniel Medeiros, Gregor Reichert, Gustavo Leon
 ==================================================
@@ -61,6 +61,44 @@ VERSION HISTORY / CHANGELOG
 ==================================================
 
 The full changelog including souce code changes can be viewed at https://github.com/DanWBR/dwsim/commits/windows
+
+Version 8.1.1
+
+-
+
+Version 8.1.0
+
+- Fixed Classic UI crashing on Linux (any)
+- Fixed Cross-Platform UI crashing on Ubuntu 18 and newer
+- Fixed issues with Gibbs Reactor
+- Fixed issues with CoolProp Property Package
+- Fixed #359: Latent heat not fully transferred in heat exchanger
+- Fixed #362: Mixer not respecting 1st law
+- Classic UI layout fixes (Windows)
+- Set Flash Calculation type on Simulation Wizard (Classic UI, Windows)
+- Fixed PDF/SVG export on High-DPI displays (Cross-Platform UI)
+- Fixed issues with Wilson Property Package
+- Fixed issues with importing data from online sources (Classic UI)
+- Sort material and energy streams list on editors (#358)
+- Fixed an issue with Python initialization
+- Rigorous Absorber solver improvements
+- Fixed a bug with Bubble Point Rigorous Column solver
+
+Version 8.0.4
+
+- Toggle Weather Panel visibility (Classic UI)
+- Fixed issues with Rigorous Column
+- Fixed an issue with Automation3 interface
+- Fixed issue #346 (PEM Fuel Cell)
+- Phase Envelope fixes (Classic UI)
+- Fixed PEM Fuel Cell editor
+- Wind Turbine now uses rotor diameter instead of disk area
+- Rolled back compound search behavior (#351)
+- Fixed issue #352 (import compound)
+- Fix for updating compound data from JSON (#354)
+- Fixed pasting data in material stream composition table (#329)
+- Fixed simplex penalty value for smoother minimization in conversion reactor (#356)
+- Fixed Absorption Column stage naming
 
 Version 8.0.3
 

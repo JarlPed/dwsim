@@ -1957,9 +1957,6 @@ Namespace UnitOperations
         'condenser (when applicable) is the 0th stage.
         'reboiler (when applicable) is the nth stage. 
 
-        Private _cond As New Stage(Guid.NewGuid().ToString)
-        Private _reb As New Stage(Guid.NewGuid().ToString)
-
         'stream collections (for the *entire* column, including side operations)
 
         Private _conn_ms As New System.Collections.Generic.Dictionary(Of String, StreamInformation)
@@ -2090,6 +2087,20 @@ Namespace UnitOperations
             si.Value.AssociatedStage = stageID
 
         End Sub
+
+        ''' <summary>
+        ''' Gets the Stream feed stage.
+        ''' </summary>
+        ''' <param name="stream"></param>
+        Public Function GetStreamFeedStageIndex(stream As MaterialStream) As Integer
+
+            Dim si = MaterialStreams.Where(Function(s) s.Value.StreamID = stream.Name).FirstOrDefault()
+
+            Dim stage = Stages.Where(Function(s) s.ID = si.Value.AssociatedStage).FirstOrDefault()
+
+            Return Stages.IndexOf(stage)
+
+        End Function
 
         Public Sub SetTopPressure(p_Pa As Double)
 
@@ -2274,9 +2285,6 @@ Namespace UnitOperations
 
             _ie = New InitialEstimates
 
-            _cond = New Stage(Guid.NewGuid().ToString)
-            _reb = New Stage(Guid.NewGuid().ToString)
-
         End Sub
 
         Public Function StreamExists(ByVal st As StreamInformation.Behavior)
@@ -2303,21 +2311,15 @@ Namespace UnitOperations
                         ElseIf i = Me.NumberOfStages - 1 Then
                             _st(_st.Count - 1).Name = FlowSheet.GetTranslatedString("DCReboiler")
                         Else
-                            _st(_st.Count - 1).Name = FlowSheet.GetTranslatedString("DCStage") & _st.Count - 1
+                            _st(_st.Count - 1).Name = "Stage" & _st.Count - 1
                         End If
                     Case ColType.AbsorptionColumn
-                        _st(_st.Count - 1).Name = FlowSheet.GetTranslatedString("DCStage") & _st.Count - 1
-                    Case ColType.ReboiledAbsorber
-                        If i = Me.NumberOfStages - 1 Then
-                            _st(_st.Count - 1).Name = FlowSheet.GetTranslatedString("DCReboiler")
-                        Else
-                            _st(_st.Count - 1).Name = FlowSheet.GetTranslatedString("DCStage") & _st.Count - 1
-                        End If
-                    Case ColType.RefluxedAbsorber
                         If i = 0 Then
-                            _st(_st.Count - 1).Name = FlowSheet.GetTranslatedString("DCCondenser")
+                            _st(_st.Count - 1).Name = "TopStage"
+                        ElseIf i = NumberOfStages - 1 Then
+                            _st(_st.Count - 1).Name = "BottomStage"
                         Else
-                            _st(_st.Count - 1).Name = FlowSheet.GetTranslatedString("DCStage") & _st.Count - 1
+                            _st(_st.Count - 1).Name = "Stage" & _st.Count - 1
                         End If
                 End Select
             Next
@@ -3842,7 +3844,37 @@ Namespace UnitOperations
                     Next
                     If ex0 IsNot Nothing Then Throw ex0
                 Else
-                    so = Solver.SolveColumn(inputdata)
+                    Dim solvererror = True
+                    If SolvingMethodName.Contains("Rates") Then
+                        Try
+                            Auxiliary.SepOps.SolvingMethods.BurninghamOttoMethod.RelaxTemperatureUpdates = False
+                            Auxiliary.SepOps.SolvingMethods.BurninghamOttoMethod.RelaxCompositionUpdates = False
+                            so = Solver.SolveColumn(inputdata)
+                            solvererror = False
+                        Catch ex As Exception
+                        End Try
+                        If solvererror Then
+                            FlowSheet.ShowMessage(GraphicObject.Tag + ": Column Solver did not converge. Will reset some parameters and try again shortly...", IFlowsheet.MessageType.Warning)
+                            Auxiliary.SepOps.SolvingMethods.BurninghamOttoMethod.RelaxTemperatureUpdates = True
+                            Auxiliary.SepOps.SolvingMethods.BurninghamOttoMethod.RelaxCompositionUpdates = True
+                            so = Solver.SolveColumn(inputdata)
+                        End If
+                    Else
+                        Try
+                            inputdata.CalculationMode = 0
+                            so = Solver.SolveColumn(inputdata)
+                            solvererror = False
+                        Catch oex As OperationCanceledException
+                            Throw oex
+                        Catch ex As Exception
+                        End Try
+                        If solvererror Then
+                            FlowSheet.ShowMessage(GraphicObject.Tag + ": the column did not converge. DWSIM will try again with a different solver configuration...", IFlowsheet.MessageType.Warning)
+                            'try to solve with auto-generated initial estimates.
+                            inputdata.CalculationMode = 0
+                            so = Solver.SolveColumn(GetSolverInputData(True))
+                        End If
+                    End If
                 End If
             End If
 
