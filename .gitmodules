@@ -1,9 +1,6 @@
 [submodule "Eto.Forms"]
 	path = Eto.Forms
 	url = https://github.com/DanWBR/Eto
-[submodule "DWSIM.Thermodynamics/Assets/Databases/FoodProp"]
-	path = DWSIM.Thermodynamics/Assets/Databases/FoodProp
-	url = https://github.com/Spogis/DWSIMFoodProp
 [submodule "DWSIM.ExternalPackages/DWSIM.UnitOperations.OpenFOAM"]
 	path = DWSIM.ExternalPackages/DWSIM.UnitOperations.OpenFOAM
 	url = https://github.com/JarlPed/DWSIM.UnitOperations.OpenFOAM
